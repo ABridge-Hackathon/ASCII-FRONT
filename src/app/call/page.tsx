@@ -13,6 +13,11 @@ import NextCallChoiceScreen from "@/components/NextCallChoiceScreen";
 const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL;
 const USE_MOCK_MODE = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
+// useWebRTC 호출 전에 체크
+if (!WS_BASE_URL && !USE_MOCK_MODE) {
+  throw new Error("NEXT_PUBLIC_WS_URL이 설정되지 않았습니다.");
+}
+
 type AppState =
   | "matching"
   | "connected"
@@ -45,7 +50,7 @@ function CallPageContent() {
 
   const webRTCHook = USE_MOCK_MODE
     ? useMockWebRTC()
-    : useWebRTC(WS_BASE_URL, {
+    : useWebRTC(WS_BASE_URL!, {
         getAccessToken: () => AuthManager.getAccessToken(),
       });
 
