@@ -18,7 +18,7 @@ export default function MainLayout({
       {/* 하단 네비게이션 바 */}
       <nav className="h-20 bg-[#1a1a1a] border-t border-gray-800 flex items-center justify-around px-4">
         <a
-          href="/home"
+          href="/call"
           className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors"
         >
           <svg
@@ -30,11 +30,11 @@ export default function MainLayout({
           >
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="currentColor" />
           </svg>
-          <span className="text-xs">홈</span>
+          <span className="text-xs">전화하기</span>
         </a>
 
         <a
-          href="/friends"
+          href="/test"
           className="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors"
         >
           <svg

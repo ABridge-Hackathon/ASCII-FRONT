@@ -179,7 +179,7 @@ export default function CallPage() {
       setIsSliding(false);
       setCallDuration("00:00");
       hasStartedMatching.current = false; // 다음 매칭을 위해 리셋
-      setAppState("matching");
+      setAppState("next-choice");
       await startMatching(selectedGender, includeLocation);
     }, 300);
   };
