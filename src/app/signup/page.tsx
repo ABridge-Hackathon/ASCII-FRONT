@@ -20,7 +20,7 @@ import {
   sendVerificationCode,
   verifyIDCard,
   verifyPhoneCode,
-  registerUser,
+  //   registerUser,
 } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
@@ -109,6 +109,7 @@ export default function SignUpPage() {
           birth_date: result.birth_date,
           address: result.address,
           success: true,
+          onboarding_token: "",
         };
         setIdCardInfo(idInfo);
         setCurrentStep("confirmation");
@@ -216,24 +217,24 @@ export default function SignUpPage() {
     setError(null);
     setCurrentStep("final-loading");
 
-    try {
-      // 회원가입 API 호출
-      const result = await registerUser(idCardInfo, phoneNumber, facePhotoBlob);
+    // try {
+    //   // 회원가입 API 호출
+    //   const result = await registerUser(idCardInfo, phoneNumber, facePhotoBlob);
 
-      if (result.success) {
-        console.log("✅ 회원가입 완료");
-        setCurrentStep("complete");
-      } else {
-        setError(result.message || "회원가입에 실패했습니다.");
-        setCurrentStep("face-confirm");
-      }
-    } catch (err: any) {
-      console.error("회원가입 오류:", err);
-      setError(err.message || "회원가입 중 오류가 발생했습니다.");
-      setCurrentStep("face-confirm");
-    } finally {
-      setIsProcessing(false);
-    }
+    //   if (result.success) {
+    //     console.log("✅ 회원가입 완료");
+    //     setCurrentStep("complete");
+    //   } else {
+    //     setError(result.message || "회원가입에 실패했습니다.");
+    //     setCurrentStep("face-confirm");
+    //   }
+    // } catch (err: any) {
+    //   console.error("회원가입 오류:", err);
+    //   setError(err.message || "회원가입 중 오류가 발생했습니다.");
+    //   setCurrentStep("face-confirm");
+    // } finally {
+    //   setIsProcessing(false);
+    // }
   };
 
   const handleRetry = () => {
@@ -300,25 +301,8 @@ export default function SignUpPage() {
   // 생년월일로 나이 계산 (50세 이상인지 확인)
   const checkAge = (birthDate: string): boolean => {
     try {
-      let year, month, day;
-
-      if (birthDate.includes(".")) {
-        // "1972.03.13" 형식
-        const parts = birthDate.split(".");
-        year = parseInt(parts[0]);
-        month = parseInt(parts[1]);
-        day = parseInt(parts[2]);
-      } else if (birthDate.length === 6) {
-        // "720313" 형식
-        year = parseInt(birthDate.substring(0, 2));
-        month = parseInt(birthDate.substring(2, 4));
-        day = parseInt(birthDate.substring(4, 6));
-
-        // 2000년 이전/이후 구분
-        year += year >= 0 && year <= 24 ? 2000 : 1900;
-      } else {
-        return false;
-      }
+      // 백엔드에서 "2003-09-15" 형식으로 오므로
+      const [year, month, day] = birthDate.split("-").map(Number);
 
       const today = new Date();
       const birthDateObj = new Date(year, month - 1, day);

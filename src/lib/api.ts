@@ -142,15 +142,24 @@ export async function verifyIDCard(imageBlob: Blob) {
     const response = await fetch(`${API_BASE_URL}/auth/idcard/ocr/`, {
       method: "POST",
       body: formData,
-      // credentials: 'include', // 쿠키/세션 사용 시
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+
+    // 백엔드 응답 구조에 맞게 변환
+    return {
+      success: result.success,
+      name: result.data.name,
+      gender: result.data.gender,
+      birth_date: result.data.birthDate,
+      address: result.data.address,
+      onboarding_token: result.data.onboardingToken,
+      message: result.error,
+    };
   } catch (error) {
     console.error("신분증 인증 오류:", error);
     throw error;
@@ -165,9 +174,11 @@ export interface IDCardInfo {
   gender: string;
   birth_date: string;
   address: string;
+  onboarding_token: string;
   success: boolean;
   message?: string;
 }
+
 interface OTPRequestResponse {
   success: boolean;
   data: {
@@ -278,12 +289,13 @@ export async function registerUser(
     formData.append("birth_date", idInfo.birth_date);
     formData.append("address", idInfo.address);
     formData.append("phone_number", phoneNumber.replace(/[^\d]/g, ""));
+    formData.append("onboarding_token", idInfo.onboarding_token);
 
     if (facePhotoBlob) {
       formData.append("face_image", facePhotoBlob, "face_photo.jpg");
     }
 
-    const response = await api.post("/register/", formData, {
+    const response = await api.post("auth/register/", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
