@@ -60,21 +60,21 @@ api.interceptors.response.use(
           return Promise.reject(error);
         }
 
-        console.log("🔄 Access Token 갱신 시도...");
+        // console.log("🔄 Access Token 갱신 시도...");
 
-        // Refresh Token으로 새 Access Token 발급
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
-          refresh: refresh,
-        });
+        // // Refresh Token으로 새 Access Token 발급
+        // const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+        //   refresh: refresh,
+        // });
 
-        const { access, refresh: newRefresh } = response.data;
-        setTokens(access, newRefresh || refresh);
+        // const { access, refresh: newRefresh } = response.data;
+        // setTokens(access, newRefresh || refresh);
 
-        console.log("✅ Access Token 갱신 성공");
+        // console.log("✅ Access Token 갱신 성공");
 
         // 실패한 요청 재시도
-        originalRequest.headers.Authorization = `Bearer ${access}`;
-        return api(originalRequest);
+        // originalRequest.headers.Authorization = `Bearer ${access}`;
+        // return api(originalRequest);
       } catch (refreshError) {
         console.error("❌ Refresh Token도 만료됨 - 재로그인 필요");
         clearTokens();
@@ -109,14 +109,6 @@ export const authAPI = {
    */
   logout: () => {
     clearTokens();
-  },
-
-  /**
-   * JWT 발급
-   */
-  getCurrentUser: async () => {
-    const response = await api.get("/user/me");
-    return response.data;
   },
 
   /**
@@ -352,6 +344,50 @@ export async function getFriends(
     console.error("친구 목록 조회 오류:", error);
     throw new Error(
       error.response?.data?.error || "친구 목록 조회에 실패했습니다.",
+    );
+  }
+}
+
+/**
+ * 사용자 프로필 정보 타입 정의
+ */
+export interface UserProfile {
+  userId: number;
+  name: string;
+  gender: "M" | "F";
+  birthDate: string;
+  age: number;
+  phoneNumber: string;
+  profileImageUrl: string;
+  region: string;
+  isWelfareWorker: boolean;
+}
+
+export interface UserProfileResponse {
+  success: boolean;
+  data: UserProfile;
+  error: null | string;
+}
+
+/**
+ * 사용자 프로필 정보 조회
+ * GET /api/users/me/
+ */
+export async function getUserProfile(): Promise<UserProfileResponse> {
+  try {
+    const response = await api.get<UserProfileResponse>("/users/me/");
+
+    if (!response.data.success) {
+      throw new Error(
+        response.data.error || "프로필 정보 조회에 실패했습니다.",
+      );
+    }
+
+    return response.data;
+  } catch (error: any) {
+    console.error("프로필 정보 조회 오류:", error);
+    throw new Error(
+      error.response?.data?.error || "프로필 정보 조회에 실패했습니다.",
     );
   }
 }

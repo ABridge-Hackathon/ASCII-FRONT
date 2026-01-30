@@ -133,7 +133,7 @@ export default function RootLayout({
 
             {/* 나 */}
             <button
-              onClick={() => router.push("/mypage")}
+              onClick={() => router.push("/profile")}
               className="flex flex-col justify-center items-center gap-[2px] w-[90px] h-[72px]"
             >
               <div className="w-7 h-7 relative">
