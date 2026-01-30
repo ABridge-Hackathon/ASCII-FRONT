@@ -10,7 +10,7 @@ import CallEndScreen from "@/components/CallEndScreen";
 import FriendAddedChoiceScreen from "@/components/FriendAddedChoiceScreen";
 import NextCallChoiceScreen from "@/components/NextCallChoiceScreen";
 
-const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL;
 const USE_MOCK_MODE = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
 type AppState =
