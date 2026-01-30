@@ -22,7 +22,7 @@ export default function RootLayout({
             <Link href="/websocket" className="hover:underline">
               🌐 WebSocket 테스트
             </Link>
-            <Link href="/video-chat" className="hover:underline font-bold">
+            <Link href="/call" className="hover:underline font-bold">
               🎥 영상통화
             </Link>
           </div>

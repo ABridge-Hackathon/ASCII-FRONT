@@ -2,7 +2,8 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
-import { SignalingMessage, CallState } from "@/types/webtrc";
+import { SignalingMessage, CallState, Gender } from "@/types/webrtc";
+import { MatchService } from "@/services/matchService";
 
 const ICE_SERVERS = {
   iceServers: [
@@ -11,7 +12,14 @@ const ICE_SERVERS = {
   ],
 };
 
-export const useWebRTC = (serverUrl: string) => {
+interface UseWebRTCProps {
+  getAccessToken: () => string | null;
+}
+
+export const useWebRTC = (
+  baseUrl: string,
+  { getAccessToken }: UseWebRTCProps,
+) => {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [callState, setCallState] = useState<CallState>({
@@ -25,42 +33,56 @@ export const useWebRTC = (serverUrl: string) => {
 
   const ws = useRef<ReconnectingWebSocket | null>(null);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
+  const currentSessionId = useRef<string | null>(null);
 
-  // WebSocket 연결
-  const connectWebSocket = useCallback(() => {
-    ws.current = new ReconnectingWebSocket(serverUrl, [], {
-      maxRetries: 10,
-      maxReconnectionDelay: 10000,
-      minReconnectionDelay: 1000,
-      reconnectionDelayGrowFactor: 1.5,
-      connectionTimeout: 4000,
-    });
-
-    ws.current.onopen = () => {
-      console.log("✅ WebSocket 연결됨");
-      setWsConnected(true);
-      setError(null);
-    };
-
-    ws.current.onclose = () => {
-      console.log("🔌 WebSocket 연결 종료");
-      setWsConnected(false);
-    };
-
-    ws.current.onerror = (error) => {
-      console.error("❌ WebSocket 에러:", error);
-      setError("WebSocket 연결 오류");
-    };
-
-    ws.current.onmessage = async (event) => {
-      try {
-        const data: SignalingMessage = JSON.parse(event.data);
-        await handleSignalingMessage(data);
-      } catch (err) {
-        console.error("메시지 처리 에러:", err);
+  // WebSocket 연결 (sessionId와 토큰 포함)
+  const connectWebSocket = useCallback(
+    (sessionId: string) => {
+      const token = getAccessToken();
+      if (!token) {
+        setError("인증 토큰이 없습니다. 로그인이 필요합니다.");
+        return;
       }
-    };
-  }, [serverUrl]);
+
+      // ws://<host>/ws/signaling/<sessionId>/?token=<ACCESS_TOKEN>
+      const wsUrl = `${baseUrl}/ws/signaling/${sessionId}/?token=${token}`;
+      console.log("WebSocket 연결 시도:", wsUrl);
+
+      ws.current = new ReconnectingWebSocket(wsUrl, [], {
+        maxRetries: 10,
+        maxReconnectionDelay: 10000,
+        minReconnectionDelay: 1000,
+        reconnectionDelayGrowFactor: 1.5,
+        connectionTimeout: 4000,
+      });
+
+      ws.current.onopen = () => {
+        console.log("✅ WebSocket 연결됨");
+        setWsConnected(true);
+        setError(null);
+      };
+
+      ws.current.onclose = () => {
+        console.log("🔌 WebSocket 연결 종료");
+        setWsConnected(false);
+      };
+
+      ws.current.onerror = (error) => {
+        console.error("❌ WebSocket 에러:", error);
+        setError("WebSocket 연결 오류");
+      };
+
+      ws.current.onmessage = async (event) => {
+        try {
+          const data: SignalingMessage = JSON.parse(event.data);
+          await handleSignalingMessage(data);
+        } catch (err) {
+          console.error("메시지 처리 에러:", err);
+        }
+      };
+    },
+    [baseUrl, getAccessToken],
+  );
 
   // 시그널링 메시지 처리
   const handleSignalingMessage = async (data: SignalingMessage) => {
@@ -68,12 +90,14 @@ export const useWebRTC = (serverUrl: string) => {
 
     switch (data.type) {
       case "match-found":
+        // 백엔드에서 매칭이 완료되면 WebSocket으로 알림
         setCallState((prev) => ({
           ...prev,
           isMatching: false,
           roomId: data.roomId || null,
           remoteUserId: data.userId || null,
         }));
+        // Offer를 생성하는 쪽이 먼저 PeerConnection 시작
         await createOffer();
         break;
 
@@ -101,7 +125,13 @@ export const useWebRTC = (serverUrl: string) => {
 
       case "match-cancelled":
         setCallState((prev) => ({ ...prev, isMatching: false }));
+        currentSessionId.current = null;
         setError("매칭이 취소되었습니다.");
+        break;
+
+      case "pong":
+        // 핑퐁 응답 (연결 유지 확인)
+        console.log("🏓 PONG 수신");
         break;
 
       default:
@@ -117,7 +147,11 @@ export const useWebRTC = (serverUrl: string) => {
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
-        audio: true,
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
       });
 
       setLocalStream(stream);
@@ -175,6 +209,11 @@ export const useWebRTC = (serverUrl: string) => {
       }
     };
 
+    // ICE 연결 상태
+    pc.oniceconnectionstatechange = () => {
+      console.log("🧊 ICE 연결 상태:", pc.iceConnectionState);
+    };
+
     peerConnection.current = pc;
     return pc;
   };
@@ -189,6 +228,7 @@ export const useWebRTC = (serverUrl: string) => {
       sendSignalingMessage({
         type: "offer",
         offer: offer,
+        roomId: callState.roomId || undefined,
       });
 
       console.log("📤 Offer 전송됨");
@@ -210,6 +250,7 @@ export const useWebRTC = (serverUrl: string) => {
       sendSignalingMessage({
         type: "answer",
         answer: answer,
+        roomId: callState.roomId || undefined,
       });
 
       console.log("📤 Answer 전송됨");
@@ -256,21 +297,75 @@ export const useWebRTC = (serverUrl: string) => {
     }
   };
 
-  // 매칭 시작
-  const startMatching = async () => {
-    if (!localStream) {
-      await startLocalStream();
-    }
+  // 매칭 시작 (HTTP + WebSocket)
+  const startMatching = async (
+    targetGender: Gender,
+    includeLocation: boolean = false,
+  ) => {
+    try {
+      // 1. 로컬 스트림이 없으면 먼저 시작
+      if (!localStream) {
+        await startLocalStream();
+      }
 
-    setCallState((prev) => ({ ...prev, isMatching: true }));
-    sendSignalingMessage({ type: "match-request" });
-    console.log("🔍 매칭 요청 전송됨");
+      setCallState((prev) => ({ ...prev, isMatching: true }));
+      setError(null);
+
+      // 2. JWT 토큰 가져오기
+      const token = getAccessToken();
+      if (!token) {
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // 3. 위치 정보 가져오기 (선택사항)
+      let location: { latitude?: number; longitude?: number } = {};
+      if (includeLocation) {
+        const coords = await MatchService.getCurrentLocation();
+        if (coords) {
+          location = coords;
+        }
+      }
+
+      // 4. HTTP POST로 매칭 요청 (토큰 포함)
+      const matchResponse = await MatchService.requestMatch(
+        {
+          targetGender,
+          ...location,
+        },
+        token,
+      );
+
+      console.log("✅ 매칭 응답:", matchResponse);
+      currentSessionId.current = matchResponse.sessionId;
+
+      // 5. WebSocket 연결 (sessionId와 토큰 포함)
+      connectWebSocket(matchResponse.sessionId);
+    } catch (err) {
+      console.error("매칭 시작 에러:", err);
+      setError(
+        err instanceof Error ? err.message : "매칭 요청에 실패했습니다.",
+      );
+      setCallState((prev) => ({ ...prev, isMatching: false }));
+    }
   };
 
   // 매칭 취소
-  const cancelMatching = () => {
-    setCallState((prev) => ({ ...prev, isMatching: false }));
-    sendSignalingMessage({ type: "match-cancelled" });
+  const cancelMatching = async () => {
+    try {
+      const token = getAccessToken();
+
+      if (currentSessionId.current && token) {
+        await MatchService.cancelMatch(currentSessionId.current, token);
+      }
+
+      setCallState((prev) => ({ ...prev, isMatching: false }));
+      currentSessionId.current = null;
+
+      // WebSocket으로도 알림
+      sendSignalingMessage({ type: "match-cancelled" });
+    } catch (err) {
+      console.error("매칭 취소 에러:", err);
+    }
   };
 
   // 통화 종료
@@ -288,6 +383,9 @@ export const useWebRTC = (serverUrl: string) => {
       remoteUserId: null,
     });
 
+    currentSessionId.current = null;
+
+    // WebSocket으로 상대방에게 알림
     sendSignalingMessage({ type: "user-disconnected" });
   };
 
@@ -306,13 +404,23 @@ export const useWebRTC = (serverUrl: string) => {
       remoteUserId: null,
     });
 
+    currentSessionId.current = null;
     setError("상대방과의 연결이 끊어졌습니다.");
   };
 
+  // 주기적인 핑 전송 (연결 유지)
+  useEffect(() => {
+    if (!wsConnected) return;
+
+    const pingInterval = setInterval(() => {
+      sendSignalingMessage({ type: "ping" });
+    }, 30000); // 30초마다
+
+    return () => clearInterval(pingInterval);
+  }, [wsConnected]);
+
   // 정리
   useEffect(() => {
-    connectWebSocket();
-
     return () => {
       if (ws.current) {
         ws.current.close();
@@ -324,7 +432,7 @@ export const useWebRTC = (serverUrl: string) => {
         localStream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [connectWebSocket]);
+  }, [localStream]);
 
   return {
     localStream,
