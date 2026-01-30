@@ -369,22 +369,22 @@ export const useWebRTC = (
       setCallState((prev) => ({ ...prev, isMatching: true }));
       setError(null);
 
-      // 2. JWT 토큰 가져오기
-      const token = getAccessToken();
-      console.log("🔑 토큰 확인:", token ? "있음" : "없음");
+      // // 2. JWT 토큰 가져오기
+      // const token = getAccessToken();
+      // console.log("🔑 토큰 확인:", token ? "있음" : "없음");
 
-      if (!token) {
-        throw new Error("인증 토큰이 없습니다.");
-      }
+      // if (!token) {
+      //   throw new Error("인증 토큰이 없습니다.");
+      // // }
 
-      // 3. 위치 정보 가져오기 (선택)
-      let location: { latitude?: number; longitude?: number } = {};
-      if (includeLocation) {
-        const coords = await MatchService.getCurrentLocation();
-        if (coords) {
-          location = coords;
-        }
-      }
+      // // 3. 위치 정보 가져오기 (선택)
+      // let location: { latitude?: number; longitude?: number } = {};
+      // if (includeLocation) {
+      //   const coords = await MatchService.getCurrentLocation();
+      //   if (coords) {
+      //     location = coords;
+      //   }
+      // }
 
       // // 4. HTTP POST로 매칭 요청
       // console.log("📡 매칭 API 호출 중...");
