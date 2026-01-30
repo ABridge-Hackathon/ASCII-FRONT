@@ -379,25 +379,25 @@ export const useWebRTC = (
         }
       }
 
-      // 4. HTTP POST로 매칭 요청
-      console.log("📡 매칭 API 호출 중...");
-      const matchResponse = await MatchService.requestMatch(
-        {
-          targetGender,
-          ...location,
-        },
-        token,
-      );
-      console.log("✅ 매칭 응답:", matchResponse);
-      console.log("📝 sessionId:", matchResponse.sessionId);
-      // currentSessionId.current = matchResponse.sessionId;
-      currentSessionId.current = "550e8400-e29b-41d4-a716-446655440000";
+      // // 4. HTTP POST로 매칭 요청
+      // console.log("📡 매칭 API 호출 중...");
+      // const matchResponse = await MatchService.requestMatch(
+      //   {
+      //     targetGender,
+      //     ...location,
+      //   },
+      //   token,
+      // );
+      // console.log("✅ 매칭 응답:", matchResponse);
+      // console.log("📝 sessionId:", matchResponse.sessionId);
+      // // currentSessionId.current = matchResponse.sessionId;
+      // currentSessionId.current = "550e8400-e29b-41d4-a716-446655440000";
 
-      // peerUserId 저장 (친구 추가용)
-      setCallState((prev) => ({
-        ...prev,
-        peerUserId: matchResponse.peerUserId,
-      }));
+      // // peerUserId 저장 (친구 추가용)
+      // setCallState((prev) => ({
+      //   ...prev,
+      //   peerUserId: matchResponse.peerUserId,
+      // }));
 
       // 5. WebSocket 연결 (약간의 딜레이 추가)
       // 토큰은 connectWebSocket 내부에서 쿼리 파라미터로 추가됨
