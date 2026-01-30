@@ -390,7 +390,8 @@ export const useWebRTC = (
       );
       console.log("✅ 매칭 응답:", matchResponse);
       console.log("📝 sessionId:", matchResponse.sessionId);
-      currentSessionId.current = matchResponse.sessionId;
+      // currentSessionId.current = matchResponse.sessionId;
+      currentSessionId.current = "test123";
 
       // peerUserId 저장 (친구 추가용)
       setCallState((prev) => ({

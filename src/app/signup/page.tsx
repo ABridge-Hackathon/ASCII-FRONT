@@ -327,14 +327,14 @@ export default function SignUpPage() {
     if (!error) return null;
 
     return (
-      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 max-w-md">
-        <p className="text-sm font-medium">{error}</p>
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 sm:px-6 py-3 rounded-lg shadow-lg z-50 max-w-[90%] sm:max-w-md">
+        <p className="text-sm font-medium text-center">{error}</p>
       </div>
     );
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
       {renderError()}
 
       {currentStep === "terms" && <TermsAgreement onNext={handleNextStep} />}

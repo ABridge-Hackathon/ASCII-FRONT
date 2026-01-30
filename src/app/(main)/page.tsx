@@ -2,96 +2,278 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getUserProfile, UserProfile } from "@/lib/api";
+import { clearTokens } from "@/utils/auth";
 
-export default function CallStartPage() {
+export default function MyPage() {
   const router = useRouter();
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setIsAnimating(true);
+    loadProfile();
   }, []);
 
-  const handleCallStart = () => {
-    router.push("/call");
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await getUserProfile();
+      setProfile(response.data);
+    } catch (err: any) {
+      console.error("프로필 로딩 실패:", err);
+      setError(err.message || "프로필 정보를 불러올 수 없습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="relative w-full h-full">
-      {/* 상단 배너 */}
-      <div className="absolute w-[328px] h-[112px] left-1/2 -translate-x-1/2 top-[46px] rounded-[10px] overflow-hidden">
-        <div
-          className="absolute w-[348px] h-[121px] left-1/2 -translate-x-1/2 top-[-2px]"
-          style={{
-            background: "url(/banner-image.png)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
+  const handleLogout = () => {
+    clearTokens();
+    router.push("/login");
+  };
+
+  const handleWithdrawal = () => {
+    // 회원탈퇴 로직
+    if (confirm("정말 탈퇴하시겠습니까?")) {
+      console.log("회원탈퇴");
+      // TODO: 회원탈퇴 API 호출
+    }
+  };
+
+  // 성별 한글 변환
+  const getGenderText = (gender: "M" | "F") => {
+    return gender === "M" ? "남성" : "여성";
+  };
+
+  // 전화번호 포맷팅 (01012341234 -> 010-1234-1234)
+  const formatPhoneNumber = (phone: string) => {
+    if (phone.length === 11) {
+      return `${phone.slice(0, 3)}-${phone.slice(3, 7)}-${phone.slice(7)}`;
+    }
+    return phone;
+  };
+
+  // 생년월일 포맷팅 (1972-03-30 -> 1972.03.30)
+  const formatBirthDate = (date: string) => {
+    return date.replace(/-/g, ".");
+  };
+
+  if (loading) {
+    return (
+      <div className="relative w-full min-h-screen bg-[#F3F3F3] flex items-center justify-center p-4">
+        <div className="text-[#4F4E4A] text-base">로딩 중...</div>
       </div>
+    );
+  }
 
-      {/* 메인 텍스트 */}
-      <h1 className="absolute w-[132px] h-[72px] left-1/2 -translate-x-1/2 top-[209px] font-[NanumSquare_Neo_OTF] font-extrabold text-[25.949px] leading-[140%] text-center tracking-[-0.03em] text-[#111111]">
-        내 근처 친구 함 보까?
-      </h1>
-
-      {/* 애니메이션 원들 */}
-      <div className="absolute w-[282px] h-[282px] left-1/2 -translate-x-1/2 top-[321px]">
-        {/* 가장 바깥 원 - 회색 */}
-        <div
-          className={`absolute w-full h-full rounded-full bg-[#EBE7E4] transition-all duration-1000 ${
-            isAnimating ? "scale-100 opacity-100" : "scale-90 opacity-0"
-          }`}
-        />
-
-        {/* 중간 원 - 노란색 */}
-        <div
-          className={`absolute w-[229.18px] h-[229.18px] left-[27.35px] top-[26.41px] rounded-full bg-[#FFE14F] transition-all duration-1000 delay-150 ${
-            isAnimating ? "scale-100 opacity-100" : "scale-90 opacity-0"
-          }`}
-        />
-
-        {/* 메인 버튼 - 클릭 가능한 주황색 원 */}
+  if (error || !profile) {
+    return (
+      <div className="relative w-full min-h-screen bg-[#F3F3F3] flex flex-col items-center justify-center gap-4 p-4">
+        <div className="text-[#4F4E4A] text-base text-center">{error}</div>
         <button
-          onClick={handleCallStart}
-          className={`absolute w-[176.37px] h-[176.37px] left-[53.76px] top-[52.82px] rounded-full bg-[#FF6E00] flex items-center justify-center transition-all duration-1000 delay-300 hover:scale-105 active:scale-95 ${
-            isAnimating ? "scale-100 opacity-100" : "scale-90 opacity-0"
-          }`}
+          onClick={loadProfile}
+          className="px-6 py-2 bg-[#FF6E00] text-white rounded-lg"
         >
-          {/* 전화 아이콘 */}
-          <svg
-            width="85"
-            height="77"
-            viewBox="0 0 85 77"
-            fill="none"
-            className="relative"
-          >
-            <path
-              d="M71.3 61.82C71.3 63.15 70.95 64.52 70.2 65.86C69.45 67.2 68.5 68.45 67.25 69.6C65.15 71.65 62.85 73.1 60.3 73.97C57.8 74.84 55.1 75.28 52.2 75.28C47.65 75.28 42.8 74.27 37.7 72.23C32.6 70.19 27.5 67.37 22.45 63.77C17.35 60.12 12.55 56.02 8.05 51.47C3.6 46.87 -0.5 42.07 -4.15 37.07C-7.75 32.12 -10.57 27.32 -12.61 22.67C-14.65 18.02 -15.68 13.62 -15.68 9.47C-15.68 6.62 -15.19 3.92 -14.22 1.42C-13.25 -1.13 -11.74 -3.48 -9.69 -5.58C-6.99 -8.38 -4.04 -9.78 -0.89 -9.78C0.26 -9.78 1.41 -9.48 2.46 -8.88C3.56 -8.28 4.51 -7.43 5.21 -6.38L12.1 4.37C12.8 5.37 13.3 6.27 13.65 7.12C14 8.02 14.2 8.87 14.2 9.62C14.2 10.62 13.9 11.62 13.3 12.57C12.75 13.52 11.95 14.52 10.95 15.52L7.8 18.77C7.35 19.22 7.15 19.77 7.15 20.47C7.15 20.82 7.2 21.12 7.3 21.47C7.45 21.82 7.6 22.07 7.7 22.32C8.4 23.62 9.6 25.32 11.3 27.42C13.05 29.52 14.95 31.67 17.05 33.82C19.2 36.02 21.3 38.07 23.45 39.92C25.55 41.72 27.25 42.87 28.6 43.57C28.8 43.67 29.05 43.82 29.35 43.97C29.7 44.12 30.05 44.17 30.45 44.17C31.2 44.17 31.75 43.92 32.2 43.47L35.3 40.42C36.35 39.37 37.35 38.57 38.3 38.07C39.25 37.47 40.2 37.17 41.25 37.17C42 37.17 42.8 37.32 43.7 37.67C44.6 38.02 45.5 38.52 46.5 39.17L57.45 46.17C58.5 46.82 59.35 47.62 59.95 48.62C60.5 49.62 60.8 50.62 60.8 51.72L71.3 61.82Z"
-              fill="white"
-              transform="translate(21, 12)"
-            />
-          </svg>
+          다시 시도
         </button>
       </div>
+    );
+  }
 
-      {/* 하단 설명 툴팁 */}
-      <div className="absolute w-[226px] h-[88px] left-[68px] top-[617px]">
-        {/* 말풍선 꼬리 */}
-        <div
-          className="absolute w-10 h-10 left-[92px] top-0 bg-white"
-          style={{
-            clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-            borderRadius: "3px",
-          }}
-        />
+  return (
+    <div className="relative w-full min-h-screen bg-[#F3F3F3] px-4 py-8 sm:py-12">
+      <div className="max-w-[360px] mx-auto">
+        {/* 인사말 */}
+        <h1 className="mt-[44px] sm:mt-[64px] font-semibold text-[24px] sm:text-[28px] leading-[130%] tracking-[-0.03em] text-[#111111]">
+          {profile.name}님 안녕하세요!
+        </h1>
 
-        {/* 말풍선 본체 */}
-        <div className="absolute w-[226px] h-[66px] left-0 top-[22px] bg-white rounded-[10px] flex items-center justify-center px-6">
-          <p className="text-lg font-semibold leading-[135%] text-center tracking-[-0.03em] text-[#3A3935]">
-            누르면 근처 친구와
-            <br />
-            얼굴보며 대화할 수 있어요
-          </p>
+        {/* 프로필 카드 */}
+        <div className="mt-[24px] sm:mt-[28px] w-full bg-white rounded-[12px] p-3">
+          <div className="flex gap-3">
+            {/* 프로필 이미지 */}
+            <div className="flex-shrink-0 w-[100px] sm:w-[116px] h-[124px] sm:h-[144px] rounded-[11.93px] overflow-hidden bg-gray-200">
+              {profile.profileImageUrl ? (
+                <img
+                  src={profile.profileImageUrl}
+                  alt={profile.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    className="opacity-50"
+                  >
+                    <circle cx="32" cy="20" r="12" fill="currentColor" />
+                    <path
+                      d="M10 54C10 42 20 34 32 34C44 34 54 42 54 54"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </div>
+              )}
+            </div>
+
+            {/* 프로필 정보 */}
+            <div className="flex-1 flex flex-col justify-center gap-2 sm:gap-4 min-w-0">
+              {/* 성별 */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-medium text-[#C0BBB6] flex-shrink-0">
+                  성별
+                </span>
+                <span className="text-sm sm:text-base font-medium text-[#65635F] truncate">
+                  {getGenderText(profile.gender)}
+                </span>
+              </div>
+
+              {/* 생년월일 */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-medium text-[#C0BBB6] flex-shrink-0">
+                  생년월일
+                </span>
+                <span className="text-sm sm:text-base font-medium text-[#65635F] truncate">
+                  {formatBirthDate(profile.birthDate)}
+                </span>
+              </div>
+
+              {/* 거주지역 */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-medium text-[#C0BBB6] flex-shrink-0">
+                  거주지역
+                </span>
+                <span className="text-sm sm:text-base font-medium text-[#65635F] truncate">
+                  {profile.region}
+                </span>
+              </div>
+
+              {/* 전화번호 */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-medium text-[#C0BBB6] flex-shrink-0">
+                  전화번호
+                </span>
+                <span className="text-sm sm:text-base font-medium text-[#65635F] truncate">
+                  {formatPhoneNumber(profile.phoneNumber)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 설정 메뉴 */}
+        <div className="mt-4 w-full bg-white rounded-[12px] overflow-hidden">
+          {/* 내 복지관 정보 */}
+          <button
+            onClick={() => router.push("/welfare-info")}
+            className="flex items-center justify-between w-full h-12 px-4 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+          >
+            <span className="text-sm sm:text-base font-normal text-[#4F4E4A]">
+              내 복지관 정보
+            </span>
+            <svg
+              width="7"
+              height="14"
+              viewBox="0 0 7 14"
+              fill="none"
+              className="flex-shrink-0"
+            >
+              <path
+                d="M1 1L6 7L1 13"
+                stroke="#A7A39F"
+                strokeWidth="1.44"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {/* 구분선 */}
+          <div className="w-full h-[1px] bg-gray-100" />
+
+          {/* 이용약관 및 정책 */}
+          <button
+            onClick={() => router.push("/terms")}
+            className="flex items-center justify-between w-full h-12 px-4 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+          >
+            <span className="text-sm sm:text-base font-normal text-[#4F4E4A]">
+              이용약관 및 정책
+            </span>
+            <svg
+              width="7"
+              height="14"
+              viewBox="0 0 7 14"
+              fill="none"
+              className="flex-shrink-0"
+            >
+              <path
+                d="M1 1L6 7L1 13"
+                stroke="#A7A39F"
+                strokeWidth="1.44"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {/* 구분선 */}
+          <div className="w-full h-[1px] bg-gray-100" />
+
+          {/* 로그아웃 */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-between w-full h-12 px-4 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+          >
+            <span className="text-sm sm:text-base font-normal text-[#4F4E4A]">
+              로그아웃
+            </span>
+            <svg
+              width="7"
+              height="14"
+              viewBox="0 0 7 14"
+              fill="none"
+              className="flex-shrink-0"
+            >
+              <path
+                d="M1 1L6 7L1 13"
+                stroke="#A7A39F"
+                strokeWidth="1.44"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {/* 구분선 */}
+          <div className="w-full h-[1px] bg-gray-100" />
+
+          {/* 회원탈퇴 */}
+          <button
+            onClick={handleWithdrawal}
+            className="flex items-center justify-between w-full h-12 px-4 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+          >
+            <span className="text-sm sm:text-base font-normal text-[#4F4E4A]">
+              회원탈퇴
+            </span>
+            <svg
+              width="7"
+              height="14"
+              viewBox="0 0 7 14"
+              fill="none"
+              className="flex-shrink-0"
+            >
+              <path
+                d="M1 1L6 7L1 13"
+                stroke="#A7A39F"
+                strokeWidth="1.44"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
