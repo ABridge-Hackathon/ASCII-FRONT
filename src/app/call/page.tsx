@@ -10,8 +10,7 @@ import CallEndScreen from "@/components/CallEndScreen";
 import FriendAddedChoiceScreen from "@/components/FriendAddedChoiceScreen";
 import NextCallChoiceScreen from "@/components/NextCallChoiceScreen";
 
-const WS_BASE_URL =
-  process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://localhost:8000";
+const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
 const USE_MOCK_MODE = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
 type AppState =
@@ -106,14 +105,15 @@ function CallPageContent() {
     }
   }, [webRTCState.isConnected, callStartTime]);
 
-  // 앱 상태 동기화
+  // 🎯 앱 상태 동기화 - wsConnected 기반으로 변경
   useEffect(() => {
-    if (webRTCState.isConnected) {
+    if (wsConnected) {
+      // WebSocket 연결되면 바로 connected 상태로
       setAppState("connected");
     } else if (webRTCState.isMatching) {
       setAppState("matching");
     }
-  }, [webRTCState.isConnected, webRTCState.isMatching]);
+  }, [wsConnected, webRTCState.isMatching]);
 
   // 로컬 스트림 연결
   useEffect(() => {
@@ -242,39 +242,36 @@ function CallPageContent() {
       {/* 디버그 토글 버튼 */}
       <button
         onClick={() => setShowDebug(!showDebug)}
-        className="absolute top-4 left-4 z-50 bg-gray-800 text-white px-3 py-1 rounded text-xs opacity-50 hover:opacity-100"
+        className="absolute bottom-4 left-4 z-50 w-12 h-12 bg-gray-800/80 hover:bg-gray-700/80 rounded-full flex items-center justify-center transition-colors"
       >
-        {showDebug ? "디버그 숨기기" : "디버그 보기"}
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
+            fill="white"
+          />
+        </svg>
       </button>
 
       {/* 디버그 패널 */}
       {showDebug && (
-        <div className="absolute top-16 left-4 z-50 bg-gray-900 bg-opacity-95 p-4 rounded-lg max-w-sm">
-          <AudioVisualizer
-            localStream={localStream}
-            remoteStream={remoteStream}
-          />
-          <div className="mt-4 pt-4 border-t border-gray-700">
-            <div className="text-xs text-gray-400 space-y-1">
+        <div className="absolute bottom-20 left-4 z-50 w-80 bg-gray-900/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700 overflow-hidden">
+          <div className="bg-gray-800 px-4 py-3 border-b border-gray-700">
+            <h3 className="text-white font-bold text-sm flex items-center gap-2">
+              <span className="text-lg">🔍</span>
+              디버그 정보
+            </h3>
+          </div>
+          <div className="p-4">
+            <div className="space-y-3 text-xs text-gray-300 font-mono">
               <div className="flex justify-between">
-                <span>통화 상태:</span>
-                <span className="text-blue-400">{appState}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>선택 성별:</span>
-                <span className="text-purple-400">
-                  {selectedGender === "M" ? "남성" : "여성"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>위치 사용:</span>
-                <span
-                  className={
-                    includeLocation ? "text-green-400" : "text-gray-500"
-                  }
-                >
-                  {includeLocation ? "✓" : "✗"}
-                </span>
+                <span>앱 상태:</span>
+                <span className="text-cyan-400">{appState}</span>
               </div>
               <div className="flex justify-between">
                 <span>매칭 중:</span>
@@ -287,10 +284,10 @@ function CallPageContent() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>통화 연결:</span>
+                <span>연결됨:</span>
                 <span
                   className={
-                    webRTCState.isConnected ? "text-green-400" : "text-gray-500"
+                    webRTCState.isConnected ? "text-green-400" : "text-red-400"
                   }
                 >
                   {webRTCState.isConnected ? "✓" : "✗"}

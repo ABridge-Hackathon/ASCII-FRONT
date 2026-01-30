@@ -83,6 +83,13 @@ export const useWebRTC = (
         console.log("✅ WebSocket 연결됨");
         setWsConnected(true);
         setError(null);
+
+        // 🎯 WebSocket 연결되면 바로 통화 상태로 전환
+        setCallState((prev) => ({
+          ...prev,
+          isMatching: false,
+          isConnected: true,
+        }));
       };
 
       ws.current.onclose = (event) => {
@@ -217,7 +224,7 @@ export const useWebRTC = (
       console.log("🎥 원격 스트림 수신됨");
       if (event.streams && event.streams[0]) {
         setRemoteStream(event.streams[0]);
-        setCallState((prev) => ({ ...prev, isConnected: true }));
+        // 이미 isConnected는 true이므로 중복 설정 제거
       }
     };
 
