@@ -16,8 +16,10 @@ export default function RootLayout({
     const fetchToken = async () => {
       try {
         const result = await authAPI.getDevJWT();
-        // console.log(result.data.accessToken);
-        // console.log(result.data.isRegistered);
+        if (result.data != null) {
+          console.log(result.data.accessToken);
+          console.log(result.data.isRegistered);
+        }
       } catch (error) {
         console.error("JWT fetch error:", error);
       }
