@@ -152,7 +152,7 @@ export default function CallPage() {
 
   const handleCancelMatching = () => {
     cancelMatching();
-    router.push("/");
+    setAppState("matching");
   };
 
   const handleAddFriend = async () => {

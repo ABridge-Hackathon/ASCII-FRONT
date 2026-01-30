@@ -16,9 +16,6 @@ import {
 // Axios 인스턴스 생성
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
   timeout: 10000,
 });
 
@@ -255,11 +252,7 @@ export async function uploadFacePhoto(photoBlob: Blob) {
   formData.append("face_image", photoBlob, "face_photo.jpg");
 
   try {
-    const response = await api.post("/auth/profile-image/", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await api.post("/auth/profile-image/", formData);
 
     if (!response.data.success) {
       throw new Error(
@@ -295,11 +288,7 @@ export async function registerUser(
       formData.append("face_image", facePhotoBlob, "face_photo.jpg");
     }
 
-    const response = await api.post("auth/register/", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await api.post("auth/register/", formData);
 
     if (!response.data.success) {
       throw new Error(response.data.message || "회원가입에 실패했습니다.");
@@ -314,5 +303,55 @@ export async function registerUser(
   } catch (error) {
     console.error("회원가입 오류:", error);
     throw error;
+  }
+}
+
+/**
+ * 친구 목록 타입 정의
+ */
+export interface Friend {
+  userId: number;
+  name: string;
+  age: number;
+  region: string;
+  online: boolean;
+  isWelfareWorker: boolean;
+  profileImageUrl: string;
+}
+
+export interface FriendsResponse {
+  success: boolean;
+  data: {
+    friends: Friend[];
+    offset: number;
+    limit: number;
+    nextOffset: number;
+    total: number;
+  };
+  error: null | string;
+}
+
+/**
+ * 친구 목록 조회
+ */
+export async function getFriends(
+  offset: number = 0,
+  limit: number = 6,
+): Promise<FriendsResponse> {
+  try {
+    const response = await api.get<FriendsResponse>("/friends", {
+      params: { offset, limit },
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.error || "친구 목록 조회에 실패했습니다.");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    console.error("친구 목록 조회 오류:", error);
+    throw new Error(
+      error.response?.data?.error || "친구 목록 조회에 실패했습니다.",
+    );
   }
 }
