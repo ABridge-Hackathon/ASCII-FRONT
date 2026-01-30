@@ -391,7 +391,7 @@ export const useWebRTC = (
       console.log("✅ 매칭 응답:", matchResponse);
       console.log("📝 sessionId:", matchResponse.sessionId);
       // currentSessionId.current = matchResponse.sessionId;
-      currentSessionId.current = "test123";
+      currentSessionId.current = "550e8400-e29b-41d4-a716-446655440000";
 
       // peerUserId 저장 (친구 추가용)
       setCallState((prev) => ({
@@ -403,7 +403,7 @@ export const useWebRTC = (
       // 토큰은 connectWebSocket 내부에서 쿼리 파라미터로 추가됨
       console.log("🚀 connectWebSocket 호출 직전");
       setTimeout(() => {
-        connectWebSocket("test123");
+        connectWebSocket("550e8400-e29b-41d4-a716-446655440000");
       }, 100); // 100ms 딜레이
     } catch (err) {
       console.error("❌ 매칭 시작 에러:", err);

@@ -15,7 +15,6 @@ export default function VerificationLoading({
   idCardInfo,
 }: VerificationLoadingProps) {
   useEffect(() => {
-    // 3초 후 다음 페이지로 이동 (실제로는 백엔드 응답에 따라)
     const timer = setTimeout(() => {
       onComplete();
     }, 3000);
@@ -24,19 +23,9 @@ export default function VerificationLoading({
   }, [onComplete]);
 
   return (
-    <div className="relative w-[360px] h-[800px] bg-white mx-auto">
-      {/* Status Bar */}
-      <div className="absolute top-0 left-0 right-0 h-10 flex justify-between items-center px-4">
-        <div className="text-sm text-[#111111]">9:30</div>
-        <div className="flex gap-1">
-          <div className="w-4 h-4" />
-          <div className="w-4 h-4" />
-          <div className="w-4 h-4" />
-        </div>
-      </div>
-
+    <div className="relative w-full max-w-[500px] min-h-screen bg-white mx-auto">
       {/* Navigation Bar */}
-      <nav className="absolute top-10 left-0 right-0 h-14 bg-white flex justify-between items-center px-1">
+      <nav className="flex justify-between items-center px-1 h-14 bg-white">
         <button className="w-12 h-12 flex items-center justify-center">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path
@@ -53,33 +42,32 @@ export default function VerificationLoading({
       </nav>
 
       {/* Title */}
-      <h1 className="absolute left-4 top-[127px] font-semibold text-2xl leading-[130%] tracking-[-0.03em] text-[#262931]">
+      <h1 className="mt-[63px] px-4 font-semibold text-xl sm:text-2xl leading-[130%] tracking-[-0.03em] text-[#262931]">
         신분증을 확인하고 있어요
       </h1>
 
       {/* Loading Animation */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-[288px] w-[323.76px] h-[323.76px]">
-        {/* Magnifying Glass Illustration */}
+      <div className="mt-[161px] mx-auto w-full max-w-[323.76px] aspect-square px-4">
         <div className="relative w-full h-full animate-pulse">
           {/* ID Card */}
           <div
-            className="absolute w-[258.91px] h-[257.25px] left-[14.13px] top-[16.48px] bg-[#FF7F1E] rounded-lg"
+            className="absolute w-[80%] h-[79.4%] left-[4.4%] top-[5.1%] bg-[#FF7F1E] rounded-lg"
             style={{ transform: "rotate(-8.5deg)" }}
           />
 
           {/* Eyes */}
           <div
-            className="absolute w-[10.97px] h-[18.66px] left-[172.37px] top-[75.22px] bg-[#3A3935] rounded-full"
+            className="absolute w-[3.4%] h-[5.8%] left-[53.2%] top-[23.2%] bg-[#3A3935] rounded-full"
             style={{ transform: "rotate(-0.46deg)" }}
           />
           <div
-            className="absolute w-[10.97px] h-[18.66px] left-[135.07px] top-[74.33px] bg-[#3A3935] rounded-full"
+            className="absolute w-[3.4%] h-[5.8%] left-[41.7%] top-[23%] bg-[#3A3935] rounded-full"
             style={{ transform: "rotate(-0.46deg)" }}
           />
 
           {/* Smile */}
           <div
-            className="absolute w-[79.44px] h-[11.3px] left-[120.58px] top-[100.99px] border-[5.74px] border-[#3A3935] rounded-b-full"
+            className="absolute w-[24.5%] h-[3.5%] left-[37.2%] top-[31.2%] border-[5.74px] border-[#3A3935] rounded-b-full"
             style={{
               transform: "rotate(0.8deg)",
               background: "linear-gradient(180deg, #FF7F1E 0%, #E27624 100%)",
@@ -88,18 +76,18 @@ export default function VerificationLoading({
 
           {/* Magnifying Glass */}
           <div
-            className="absolute w-[186.17px] h-[225.75px] right-0 top-0"
+            className="absolute w-[57.5%] h-[69.7%] right-0 top-0"
             style={{ transform: "rotate(2.39deg)" }}
           >
             {/* Handle */}
             <div
-              className="absolute w-[24.51px] h-[76.12px] left-[-19.42px] top-[166.63px] bg-[#6F4124] rounded-[5.16px]"
+              className="absolute w-[13.2%] h-[33.7%] left-[-10.4%] top-[73.8%] bg-[#6F4124] rounded-[5.16px]"
               style={{ transform: "rotate(35.75deg)" }}
             />
 
             {/* Glass circle */}
             <div
-              className="absolute w-[134.18px] h-[134.18px] left-[-14.93px] top-[19.42px] border-[12.9px] border-[#AAAAAA] rounded-full"
+              className="absolute w-[72.1%] h-[59.4%] left-[-8%] top-[8.6%] border-[12.9px] border-[#AAAAAA] rounded-full"
               style={{
                 transform: "rotate(35.75deg)",
                 background: "rgba(255, 255, 255, 0.3)",
@@ -108,7 +96,7 @@ export default function VerificationLoading({
 
             {/* Search area highlight */}
             <div
-              className="absolute w-[25.16px] h-[21.29px] left-[91.1px] top-[130.76px] border-[9px] border-white rounded"
+              className="absolute w-[13.5%] h-[9.4%] left-[48.9%] top-[57.9%] border-[9px] border-white rounded"
               style={{ transform: "rotate(-179.41deg)" }}
             />
           </div>
@@ -121,13 +109,13 @@ export default function VerificationLoading({
       </div>
 
       {/* Loading Text */}
-      <p className="absolute left-1/2 -translate-x-1/2 bottom-32 text-center text-[#3A3935] text-base">
+      <p className="fixed bottom-32 left-0 right-0 text-center text-[#3A3935] text-sm sm:text-base px-4">
         잠시만 기다려주세요...
       </p>
 
       {/* Debug: OCR 결과 표시 (개발용) */}
       {idCardInfo && process.env.NODE_ENV === "development" && (
-        <div className="absolute left-4 right-4 bottom-48 bg-white p-4 rounded-lg shadow-lg text-sm">
+        <div className="fixed left-4 right-4 bottom-48 max-w-[500px] mx-auto bg-white p-4 rounded-lg shadow-lg text-xs sm:text-sm">
           <p>
             <strong>이름:</strong> {idCardInfo.name}
           </p>

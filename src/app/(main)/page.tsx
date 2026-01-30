@@ -16,9 +16,9 @@ export default function CallStartPage() {
   };
 
   return (
-    <div className="relative w-full min-h-screen flex flex-col items-center px-4 py-8 sm:py-12">
+    <div className="relative w-full min-h-screen flex flex-col items-center px-4 py-8">
       {/* 상단 배너 */}
-      <div className="w-full max-w-[328px] h-[112px] mt-[46px] sm:mt-[46px] rounded-[10px] overflow-hidden">
+      <div className="w-full max-w-[328px] h-[112px] rounded-[10px] overflow-hidden">
         <div
           className="w-full h-full"
           style={{
@@ -30,12 +30,12 @@ export default function CallStartPage() {
       </div>
 
       {/* 메인 텍스트 */}
-      <h1 className="mt-[51px] sm:mt-[51px] font-[NanumSquare_Neo_OTF] font-extrabold text-[24px] sm:text-[25.949px] leading-[140%] text-center tracking-[-0.03em] text-[#111111] px-4">
+      <h1 className="font-[NanumSquare_Neo_OTF] font-extrabold text-[24px] leading-[140%] text-center tracking-[-0.03em] text-[#111111]">
         내 근처 친구 함 볼까?
       </h1>
 
       {/* 애니메이션 원들 */}
-      <div className="relative w-[240px] h-[240px] sm:w-[282px] sm:h-[282px] mt-[72px] sm:mt-[112px]">
+      <div className="relative w-[240px] h-[240px] mt-[72px]">
         {/* 가장 바깥 원 - 회색 */}
         <div
           className={`absolute w-full h-full rounded-full bg-[#EBE7E4] transition-all duration-1000 ${
@@ -69,7 +69,7 @@ export default function CallStartPage() {
       </div>
 
       {/* 하단 설명 툴팁 */}
-      <div className="relative w-full max-w-[226px] mt-[72px] sm:mt-[92px]">
+      <div className="relative w-full max-w-[226px] ">
         {/* 말풍선 꼬리 */}
         <div
           className="absolute w-10 h-10 left-1/2 -translate-x-1/2 top-0 bg-white"
@@ -81,7 +81,7 @@ export default function CallStartPage() {
 
         {/* 말풍선 본체 */}
         <div className="relative mt-[22px] w-full bg-white rounded-[10px] px-6 py-4">
-          <p className="text-base sm:text-lg font-semibold leading-[135%] text-center tracking-[-0.03em] text-[#3A3935]">
+          <p className="text-base font-semibold leading-[135%] text-center tracking-[-0.03em] text-[#3A3935]">
             누르면 근처 친구와
             <br />
             얼굴보며 대화할 수 있어요

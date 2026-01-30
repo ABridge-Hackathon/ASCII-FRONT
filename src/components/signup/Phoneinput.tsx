@@ -41,18 +41,7 @@ export default function PhoneInput({
   const isComplete = phoneNumber.replace(/[^\d]/g, "").length === 11;
 
   return (
-    <div className="relative w-full max-w-[360px] h-screen bg-white">
-      {/* Status Bar */}
-      <div className="flex justify-between items-center px-4 h-10 gap-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-roboto text-[#111111]">9:30</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-4"></div>
-          <div className="w-4 h-4"></div>
-        </div>
-      </div>
-
+    <div className="relative w-full max-w-[500px] min-h-screen bg-white mx-auto">
       {/* Navbar */}
       <div className="flex justify-between items-center px-1 h-14 bg-white">
         <button
@@ -80,10 +69,10 @@ export default function PhoneInput({
 
       {/* Content */}
       <div className="px-4 pt-5">
-        <h1 className="text-[28px] font-semibold leading-[130%] tracking-[-0.03em] text-[#262931] mb-4">
+        <h1 className="text-2xl sm:text-[28px] font-semibold leading-[130%] tracking-[-0.03em] text-[#262931] mb-4">
           전화번호를 적어주세요
         </h1>
-        <p className="text-lg font-medium leading-[140%] tracking-[-0.03em] text-[#918D89] mb-12">
+        <p className="text-base sm:text-lg font-medium leading-[140%] tracking-[-0.03em] text-[#918D89] mb-12">
           본인확인을 위해 필요해요
         </p>
 
@@ -96,13 +85,13 @@ export default function PhoneInput({
             placeholder="휴대폰 번호"
             maxLength={13}
             disabled={disabled}
-            className="w-full text-xl font-medium leading-[135%] tracking-[-0.03em] text-[#3A3935] placeholder:text-[#C0BBB6] outline-none bg-transparent disabled:opacity-50"
+            className="w-full text-lg sm:text-xl font-medium leading-[135%] tracking-[-0.03em] text-[#3A3935] placeholder:text-[#C0BBB6] outline-none bg-transparent disabled:opacity-50"
           />
         </div>
       </div>
 
       {/* Bottom Button */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 pb-8">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[500px] mx-auto px-4 pb-8 bg-white">
         <button
           onClick={handleNext}
           disabled={!isComplete || disabled}
@@ -112,7 +101,7 @@ export default function PhoneInput({
               : "bg-gray-200 text-gray-400 cursor-not-allowed"
           }`}
         >
-          <span className="text-xl font-semibold leading-[135%] tracking-[-0.03em]">
+          <span className="text-lg sm:text-xl font-semibold leading-[135%] tracking-[-0.03em]">
             {disabled ? "처리 중..." : "완료"}
           </span>
         </button>

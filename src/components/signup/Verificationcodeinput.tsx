@@ -20,7 +20,7 @@ export default function VerificationCodeInput({
   disabled = false,
 }: VerificationCodeInputProps) {
   const [code, setCode] = useState<string[]>(["", "", "", "", ""]);
-  const [timeLeft, setTimeLeft] = useState(180); // 기본 3분
+  const [timeLeft, setTimeLeft] = useState(180);
   const [isVerifying, setIsVerifying] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -34,7 +34,6 @@ export default function VerificationCodeInput({
   }, [timeLeft]);
 
   useEffect(() => {
-    // 5개가 모두 입력되면 자동으로 검증
     if (code.every((digit) => digit !== "") && !isVerifying && !disabled) {
       verifyCode();
     }
@@ -53,7 +52,6 @@ export default function VerificationCodeInput({
     newCode[index] = value.slice(-1);
     setCode(newCode);
 
-    // 다음 입력 필드로 자동 포커스
     if (value && index < 4) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -76,7 +74,6 @@ export default function VerificationCodeInput({
 
     setIsVerifying(true);
     try {
-      // 부모 컴포넌트에서 실제 검증 처리
       onNext(fullCode);
     } catch (error) {
       onError();
@@ -97,18 +94,7 @@ export default function VerificationCodeInput({
   };
 
   return (
-    <div className="relative w-full max-w-[360px] h-screen bg-white">
-      {/* Status Bar */}
-      <div className="flex justify-between items-center px-4 h-10 gap-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-roboto text-[#111111]">9:30</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-4"></div>
-          <div className="w-4 h-4"></div>
-        </div>
-      </div>
-
+    <div className="relative w-full max-w-[500px] min-h-screen bg-white mx-auto">
       {/* Navbar */}
       <div className="flex justify-between items-center px-1 h-14 bg-white">
         <button
@@ -136,7 +122,7 @@ export default function VerificationCodeInput({
 
       {/* Content */}
       <div className="px-4 pt-5">
-        <h1 className="text-[28px] font-semibold leading-[130%] tracking-[-0.03em] text-[#262931] mb-8">
+        <h1 className="text-2xl sm:text-[28px] font-semibold leading-[130%] tracking-[-0.03em] text-[#262931] mb-8">
           {phoneNumber}에 전송된
           <br />
           인증번호를 적어주세요
@@ -147,7 +133,7 @@ export default function VerificationCodeInput({
           {code.map((digit, index) => (
             <div
               key={index}
-              className="flex-1 h-[78px] bg-[#F3F3F3] rounded-lg flex items-center justify-center"
+              className="flex-1 h-[70px] sm:h-[78px] bg-[#F3F3F3] rounded-lg flex items-center justify-center"
             >
               <input
                 ref={(el) => {
@@ -160,7 +146,7 @@ export default function VerificationCodeInput({
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 disabled={isVerifying || disabled}
-                className="w-full h-full bg-transparent text-center text-[32px] font-bold leading-[130%] tracking-[-0.03em] text-[#3A3935] outline-none disabled:opacity-50"
+                className="w-full h-full bg-transparent text-center text-[28px] sm:text-[32px] font-bold leading-[130%] tracking-[-0.03em] text-[#3A3935] outline-none disabled:opacity-50"
               />
             </div>
           ))}
@@ -172,16 +158,16 @@ export default function VerificationCodeInput({
           disabled={disabled || isVerifying || timeLeft <= 0}
           className="w-full h-12 border border-[#F3EFEC] rounded-lg flex items-center justify-center mb-6 disabled:opacity-50"
         >
-          <span className="text-lg font-medium leading-[140%] tracking-[-0.03em] text-[#7B7874]">
+          <span className="text-base sm:text-lg font-medium leading-[140%] tracking-[-0.03em] text-[#7B7874]">
             인증번호 다시 보내기
           </span>
         </button>
       </div>
 
       {/* Bottom Buttons */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 pb-8 flex gap-2">
-        <button className="w-[122px] h-[52px] bg-[#F3F3F3] rounded-lg flex items-center justify-center">
-          <span className="text-xl font-semibold leading-[135%] tracking-[-0.03em] text-[#3A3935]">
+      <div className="fixed bottom-0 left-0 right-0 max-w-[500px] mx-auto px-4 pb-8 flex gap-2 bg-white">
+        <button className="w-[100px] sm:w-[122px] h-[52px] bg-[#F3F3F3] rounded-lg flex items-center justify-center flex-shrink-0">
+          <span className="text-lg sm:text-xl font-semibold leading-[135%] tracking-[-0.03em] text-[#3A3935]">
             도와주세요
           </span>
         </button>
@@ -195,7 +181,7 @@ export default function VerificationCodeInput({
           }
           className="flex-1 h-[52px] bg-[#FF6E00] rounded-lg flex items-center justify-center disabled:opacity-50"
         >
-          <span className="text-xl font-semibold leading-[135%] tracking-[-0.03em] text-white">
+          <span className="text-lg sm:text-xl font-semibold leading-[135%] tracking-[-0.03em] text-white">
             {isVerifying ? "확인 중..." : `완료 (${formatTime(timeLeft)})`}
           </span>
         </button>

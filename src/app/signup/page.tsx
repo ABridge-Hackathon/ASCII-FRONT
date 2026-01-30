@@ -60,12 +60,9 @@ export default function SignUpPage() {
         setCurrentStep("capture");
         break;
       case "confirmation":
-        // 나이 체크
         if (idCardInfo && checkAge(idCardInfo.birth_date)) {
-          // 50세 이상 - 전화번호 입력으로
           setCurrentStep("phone-input");
         } else {
-          // 50세 이하 - 차단 화면
           setCurrentStep("age-restriction");
         }
         break;
@@ -73,11 +70,9 @@ export default function SignUpPage() {
         setCurrentStep("confirmation");
         break;
       case "phone-input":
-        // 전화번호 입력 완료 후 인증번호 입력으로
         setCurrentStep("verification-code");
         break;
       case "verification-code":
-        // 인증번호 확인 성공 후 얼굴 촬영으로
         setCurrentStep("face-guide");
         break;
       case "face-guide":
@@ -87,7 +82,6 @@ export default function SignUpPage() {
         setCurrentStep("complete");
         break;
       case "complete":
-        // 메인 페이지로 이동
         router.push("/");
         break;
     }
@@ -99,7 +93,6 @@ export default function SignUpPage() {
     setCurrentStep("loading");
 
     try {
-      // 신분증 OCR 처리
       const result = await verifyIDCard(imageBlob);
 
       if (result.success) {
@@ -200,7 +193,6 @@ export default function SignUpPage() {
   };
 
   const handleFacePhotoCapture = (photoBlob: Blob) => {
-    // Blob을 URL로 변환하여 미리보기에 사용
     const photoUrl = URL.createObjectURL(photoBlob);
     setFacePhoto(photoUrl);
     setFacePhotoBlob(photoBlob);
@@ -218,9 +210,7 @@ export default function SignUpPage() {
     setCurrentStep("final-loading");
 
     // try {
-    //   // 회원가입 API 호출
     //   const result = await registerUser(idCardInfo, phoneNumber, facePhotoBlob);
-
     //   if (result.success) {
     //     console.log("✅ 회원가입 완료");
     //     setCurrentStep("complete");
@@ -238,14 +228,12 @@ export default function SignUpPage() {
   };
 
   const handleRetry = () => {
-    // 정보가 틀렸을 때 다시 촬영
     setIdCardInfo(null);
     setError(null);
     setCurrentStep("capture");
   };
 
   const handleFaceRetry = () => {
-    // 얼굴 사진 다시 촬영
     if (facePhoto) {
       URL.revokeObjectURL(facePhoto);
     }
@@ -256,7 +244,6 @@ export default function SignUpPage() {
   };
 
   const handleExit = () => {
-    // 앱 종료 또는 첫 화면으로
     if (typeof window !== "undefined") {
       if (window.confirm("회원가입을 종료하시겠습니까?")) {
         router.push("/");
@@ -298,10 +285,8 @@ export default function SignUpPage() {
     }
   };
 
-  // 생년월일로 나이 계산 (50세 이상인지 확인)
   const checkAge = (birthDate: string): boolean => {
     try {
-      // 백엔드에서 "2003-09-15" 형식으로 오므로
       const [year, month, day] = birthDate.split("-").map(Number);
 
       const today = new Date();
@@ -309,7 +294,6 @@ export default function SignUpPage() {
       const age = today.getFullYear() - birthDateObj.getFullYear();
       const monthDiff = today.getMonth() - birthDateObj.getMonth();
 
-      // 생일이 지났는지 확인
       const hasHadBirthdayThisYear =
         monthDiff > 0 ||
         (monthDiff === 0 && today.getDate() >= birthDateObj.getDate());
@@ -322,7 +306,6 @@ export default function SignUpPage() {
     }
   };
 
-  // 에러 메시지 표시 (필요시)
   const renderError = () => {
     if (!error) return null;
 
@@ -334,7 +317,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
       {renderError()}
 
       {currentStep === "terms" && <TermsAgreement onNext={handleNextStep} />}

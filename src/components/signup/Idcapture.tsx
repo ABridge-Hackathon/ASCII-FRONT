@@ -13,7 +13,6 @@ export default function IDCapture({ onNext, onBack }: IDCaptureProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    // 카메라 스트림 시작
     const startCamera = async () => {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -30,7 +29,6 @@ export default function IDCapture({ onNext, onBack }: IDCaptureProps) {
 
     startCamera();
 
-    // 클린업
     return () => {
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
@@ -43,7 +41,6 @@ export default function IDCapture({ onNext, onBack }: IDCaptureProps) {
 
     setIsProcessing(true);
 
-    // Canvas에 현재 비디오 프레임 캡처
     const canvas = document.createElement("canvas");
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
@@ -52,7 +49,6 @@ export default function IDCapture({ onNext, onBack }: IDCaptureProps) {
     if (ctx) {
       ctx.drawImage(videoRef.current, 0, 0);
 
-      // Canvas를 Blob으로 변환
       canvas.toBlob(
         async (blob) => {
           if (!blob) {
@@ -60,12 +56,10 @@ export default function IDCapture({ onNext, onBack }: IDCaptureProps) {
             return;
           }
 
-          // 카메라 스트림 중지
           if (stream) {
             stream.getTracks().forEach((track) => track.stop());
           }
 
-          // Blob을 부모 컴포넌트로 전달
           onNext(blob);
         },
         "image/jpeg",
@@ -82,7 +76,7 @@ export default function IDCapture({ onNext, onBack }: IDCaptureProps) {
   };
 
   return (
-    <div className="relative w-[360px] h-[800px] bg-black mx-auto overflow-hidden">
+    <div className="relative w-full max-w-[500px] min-h-screen bg-black mx-auto overflow-hidden">
       {/* Camera Video */}
       <video
         ref={videoRef}
@@ -120,26 +114,26 @@ export default function IDCapture({ onNext, onBack }: IDCaptureProps) {
             />
           </svg>
         </button>
-        <span className="font-semibold text-lg text-white tracking-[-0.03em]">
+        <span className="font-semibold text-base sm:text-lg text-white tracking-[-0.03em]">
           신분증 촬영
         </span>
         <div className="w-12 h-12" />
       </nav>
 
       {/* Title */}
-      <h1 className="absolute left-4 top-[148px] font-semibold text-2xl leading-[130%] tracking-[-0.03em] text-white z-10">
+      <h1 className="absolute left-4 right-4 top-[124px] sm:top-[148px] font-semibold text-xl sm:text-2xl leading-[130%] tracking-[-0.03em] text-white z-10">
         사각형에
         <br />
         신분증을 놓아주세요
       </h1>
 
       {/* Capture Frame */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-[268px] w-[328px] h-[206px] z-10">
+      <div className="absolute left-1/2 -translate-x-1/2 top-[220px] sm:top-[268px] w-[90%] max-w-[328px] aspect-[328/206] z-10">
         <div className="w-full h-full border-4 border-white rounded-[10px]" />
       </div>
 
       {/* Instruction Text */}
-      <p className="absolute left-1/2 -translate-x-1/2 top-[485px] font-semibold text-lg text-white tracking-[-0.03em] text-center z-10">
+      <p className="absolute left-1/2 -translate-x-1/2 bottom-[140px] sm:bottom-[187px] font-semibold text-base sm:text-lg text-white tracking-[-0.03em] text-center z-10 px-4">
         너무 밝으면 촬영이 잘 안돼요
       </p>
 

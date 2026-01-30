@@ -8,7 +8,6 @@ interface FinalLoadingProps {
 
 export default function FinalLoading({ onComplete }: FinalLoadingProps) {
   useEffect(() => {
-    // 3초 후 완료 화면으로
     const timer = setTimeout(() => {
       onComplete();
     }, 3000);
@@ -17,19 +16,9 @@ export default function FinalLoading({ onComplete }: FinalLoadingProps) {
   }, [onComplete]);
 
   return (
-    <div className="relative w-[360px] h-[800px] bg-white mx-auto">
-      {/* Status Bar */}
-      {/* <div className="absolute top-0 left-0 right-0 h-10 flex justify-between items-center px-4">
-        <div className="text-sm text-[#111111]">9:30</div>
-        <div className="flex gap-1">
-          <div className="w-4 h-4" />
-          <div className="w-4 h-4" />
-          <div className="w-4 h-4" />
-        </div>
-      </div> */}
-
+    <div className="relative w-full max-w-[500px] min-h-screen bg-white mx-auto">
       {/* Navigation Bar */}
-      <nav className="absolute top-10 left-0 right-0 h-14 bg-white flex justify-between items-center px-1">
+      <nav className="flex justify-between items-center px-1 h-14 bg-white mt-10">
         <button className="w-12 h-12 flex items-center justify-center">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path
@@ -46,52 +35,54 @@ export default function FinalLoading({ onComplete }: FinalLoadingProps) {
       </nav>
 
       {/* Title */}
-      <h1 className="absolute left-1/2 -translate-x-1/2 top-[153px] font-semibold text-[28px] leading-[130%] tracking-[-0.03em] text-[#262931] text-center">
+      <h1 className="mt-[89px] px-4 font-semibold text-2xl sm:text-[28px] leading-[130%] tracking-[-0.03em] text-[#262931] text-center">
         잠시만 기다려 주세요
       </h1>
 
       {/* Loading Illustration */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-[246px] w-[361px] h-[554px]">
-        {/* Green Background */}
-        <div
-          className="absolute w-[439px] h-[603px] left-[-129px] top-[284px] bg-[#6BC176] rounded-full"
-          style={{ transform: "rotate(90deg)" }}
-        />
-
-        {/* Shadow */}
-        <div className="absolute w-[160px] h-[49px] left-[94px] top-[289px] bg-[#4F9058] rounded-full" />
-
-        {/* Character */}
-        <div
-          className="absolute w-[253px] h-[251px] left-[37px] top-[47px]"
-          style={{ transform: "rotate(-8.5deg)" }}
-        >
-          {/* Face/Body */}
-          <div className="absolute w-full h-full bg-gradient-to-br from-[#FF7F1E] to-[#E27624] rounded-lg" />
-
-          {/* Smile */}
+      <div className="relative mt-[93px] mx-auto w-full max-w-[361px] aspect-[361/554] px-4">
+        <div className="relative w-full h-full">
+          {/* Green Background */}
           <div
-            className="absolute w-[101px] h-[15px] left-[79px] top-[74px] border-[5.6px] border-[#3A3935] rounded-b-full"
-            style={{
-              transform: "rotate(-8.5deg)",
-              background: "linear-gradient(180deg, #FF7F1E 0%, #E27624 100%)",
-            }}
+            className="absolute w-[120%] h-[110%] left-[-35%] top-[51%] bg-[#6BC176] rounded-full"
+            style={{ transform: "rotate(90deg)" }}
+          />
+
+          {/* Shadow */}
+          <div className="absolute w-[45%] h-[9%] left-[26%] top-[52%] bg-[#4F9058] rounded-full blur-sm" />
+
+          {/* Character */}
+          <div
+            className="absolute w-[70%] h-[45%] left-[10%] top-[8%]"
+            style={{ transform: "rotate(-8.5deg)" }}
+          >
+            {/* Face/Body */}
+            <div className="absolute w-full h-full bg-gradient-to-br from-[#FF7F1E] to-[#E27624] rounded-lg" />
+
+            {/* Smile */}
+            <div
+              className="absolute w-[40%] h-[6%] left-[31%] top-[29%] border-[5.6px] border-[#3A3935] rounded-b-full"
+              style={{
+                transform: "rotate(-8.5deg)",
+                background: "linear-gradient(180deg, #FF7F1E 0%, #E27624 100%)",
+              }}
+            />
+          </div>
+
+          {/* Hand waving */}
+          <div
+            className="absolute w-[25%] h-[12%] right-[13%] top-[12%] bg-[#FCD7AA] rounded-lg animate-[wave_1s_ease-in-out_infinite]"
+            style={{ transform: "matrix(-0.06, 1, 1, 0.06, 0, 0)" }}
+          />
+          <div
+            className="absolute w-[12%] h-[8%] right-[7%] top-[12%] bg-[#D9D9D9] rounded-full"
+            style={{ transform: "matrix(-0.06, 1, 1, 0.06, 0, 0)" }}
           />
         </div>
-
-        {/* Hand waving */}
-        <div
-          className="absolute w-[90px] h-[68px] right-[46px] top-[66px] bg-[#FCD7AA] rounded-lg animate-[wave_1s_ease-in-out_infinite]"
-          style={{ transform: "matrix(-0.06, 1, 1, 0.06, 0, 0)" }}
-        />
-        <div
-          className="absolute w-[44px] h-[43px] right-[24px] top-[67px] bg-[#D9D9D9] rounded-full"
-          style={{ transform: "matrix(-0.06, 1, 1, 0.06, 0, 0)" }}
-        />
       </div>
 
       {/* Loading Spinner */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-32">
+      <div className="fixed bottom-32 left-1/2 -translate-x-1/2">
         <div className="w-12 h-12 border-4 border-[#FF6E00] border-t-transparent rounded-full animate-spin" />
       </div>
     </div>
