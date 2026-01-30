@@ -130,3 +130,177 @@ export const authAPI = {
     return response.data;
   },
 };
+
+/**
+ * 신분증 이미지를 백엔드로 전송하여 OCR 처리
+ */
+export async function verifyIDCard(imageBlob: Blob) {
+  const formData = new FormData();
+  formData.append("id_image", imageBlob, "id_card.jpg");
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/idcard/ocr/`, {
+      method: "POST",
+      body: formData,
+      // credentials: 'include', // 쿠키/세션 사용 시
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("신분증 인증 오류:", error);
+    throw error;
+  }
+}
+
+/**
+ * OCR 결과 타입 정의
+ */
+export interface IDCardInfo {
+  name: string;
+  gender: string;
+  birth_date: string;
+  address: string;
+  success: boolean;
+  message?: string;
+}
+interface OTPRequestResponse {
+  success: boolean;
+  data: {
+    expiresInSec: number;
+  } | null;
+  error: string | null;
+}
+
+interface OTPVerifyResponse {
+  success: boolean;
+  data: {
+    accessToken: string;
+    tokenType: string;
+    isRegistered: boolean;
+  } | null;
+  error: string | null;
+}
+
+/**
+ * 휴대폰 인증번호 발송
+ */
+export async function sendVerificationCode(
+  phoneNumber: string,
+): Promise<OTPRequestResponse> {
+  try {
+    const response = await api.post<OTPRequestResponse>("/auth/otp/request", {
+      phoneNumber: phoneNumber.replace(/[^\d]/g, ""), // 숫자만 전송
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.error || "인증번호 발송에 실패했습니다.");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    console.error("인증번호 발송 오류:", error);
+    throw new Error(
+      error.response?.data?.error || "인증번호 발송에 실패했습니다.",
+    );
+  }
+}
+
+/**
+ * 휴대폰 인증번호 검증
+ */
+export async function verifyPhoneCode(
+  phoneNumber: string,
+  verificationCode: string,
+): Promise<OTPVerifyResponse> {
+  try {
+    const response = await api.post<OTPVerifyResponse>("/auth/otp/verify", {
+      phoneNumber: phoneNumber.replace(/[^\d]/g, ""),
+      code: verificationCode,
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.error || "인증번호가 일치하지 않습니다.");
+    }
+
+    return response.data;
+  } catch (error: any) {
+    console.error("인증번호 검증 오류:", error);
+    throw new Error(
+      error.response?.data?.error || "인증번호 검증에 실패했습니다.",
+    );
+  }
+}
+
+/**
+ * 얼굴 사진 업로드
+ */
+export async function uploadFacePhoto(photoBlob: Blob) {
+  const formData = new FormData();
+  formData.append("face_image", photoBlob, "face_photo.jpg");
+
+  try {
+    const response = await api.post("/auth/profile-image/", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (!response.data.success) {
+      throw new Error(
+        response.data.message || "얼굴 사진 업로드에 실패했습니다.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("얼굴 사진 업로드 오류:", error);
+    throw error;
+  }
+}
+
+/**
+ * 회원가입 완료 요청
+ */
+export async function registerUser(
+  idInfo: IDCardInfo,
+  phoneNumber: string,
+  facePhotoBlob?: Blob,
+) {
+  try {
+    const formData = new FormData();
+    formData.append("name", idInfo.name);
+    formData.append("gender", idInfo.gender);
+    formData.append("birth_date", idInfo.birth_date);
+    formData.append("address", idInfo.address);
+    formData.append("phone_number", phoneNumber.replace(/[^\d]/g, ""));
+
+    if (facePhotoBlob) {
+      formData.append("face_image", facePhotoBlob, "face_photo.jpg");
+    }
+
+    const response = await api.post("/register/", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "회원가입에 실패했습니다.");
+    }
+
+    // 회원가입 성공 시 토큰 저장
+    if (response.data.access && response.data.refresh) {
+      setTokens(response.data.access, response.data.refresh);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("회원가입 오류:", error);
+    throw error;
+  }
+}
