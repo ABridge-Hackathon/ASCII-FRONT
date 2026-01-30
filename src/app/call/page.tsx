@@ -1,6 +1,5 @@
 "use client";
-
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useMockWebRTC } from "@/hooks/useMockWebrtc";
@@ -22,7 +21,7 @@ type AppState =
   | "friend-added"
   | "next-choice";
 
-export default function CallPage() {
+function CallPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -98,6 +97,7 @@ export default function CallPage() {
           `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
         );
       }, 1000);
+
       return () => clearInterval(interval);
     }
 
@@ -521,5 +521,22 @@ export default function CallPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function CallPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="relative w-full h-screen bg-[#111111] flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-white mx-auto mb-4"></div>
+            <p className="text-white text-lg">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <CallPageContent />
+    </Suspense>
   );
 }

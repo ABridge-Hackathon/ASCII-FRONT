@@ -61,7 +61,7 @@ export class MatchService {
     try {
       console.log("🚫 매칭 취소:", sessionId);
 
-      const response = await fetch(`${API_BASE_URL}/match/cancel`, {
+      const response = await fetch(`${API_BASE_URL}/match/end`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
