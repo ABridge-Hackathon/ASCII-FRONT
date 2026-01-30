@@ -17,39 +17,6 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <div className="relative w-[360px] h-[800px] mx-auto bg-gradient-to-b from-[#F3F3F3] to-[#F3F3F3]">
-          {/* Status Bar */}
-          <div className="absolute top-0 left-0 right-0 h-[40px] flex justify-between items-center px-4 gap-1 z-10">
-            {/* Time & Date */}
-            <div className="flex items-center gap-2 w-[128px] h-[40px]">
-              <span className="text-sm font-normal text-[#171D1B] tracking-[0.25px]">
-                9:30
-              </span>
-            </div>
-
-            {/* Status Icons */}
-            <div className="flex justify-end items-center w-[46px] h-[52px]">
-              {/* Wi-Fi */}
-              <div className="w-4 h-4 flex items-center justify-center">
-                <div className="w-full h-full relative">
-                  <div className="absolute left-[4.17%] right-[4.17%] top-[18.5%] bottom-[16.67%] bg-[#171D1B]" />
-                </div>
-              </div>
-              {/* Signal */}
-              <div className="w-4 h-4 flex items-center justify-center -mx-[2px]">
-                <div className="w-full h-full relative">
-                  <div className="absolute left-[8.33%] right-[8.33%] top-[8.33%] bottom-[8.33%] bg-[#171D1B]" />
-                </div>
-              </div>
-              {/* Battery */}
-              <div className="w-4 h-4 flex items-center justify-center">
-                <div className="absolute w-[8.5px] h-[14.17px] bg-[#171D1B]" />
-              </div>
-            </div>
-
-            {/* Camera */}
-            <div className="absolute left-1/2 top-2 -translate-x-1/2 w-6 h-6 bg-[#2E2E2E] rounded-full z-20" />
-          </div>
-
           {/* Main Content */}
           <div className="relative h-[calc(100%-72px)]">{children}</div>
 
