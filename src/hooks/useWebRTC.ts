@@ -3,7 +3,7 @@
  *
  * 작동 흐름:
  * 1. startMatching() 호출 → HTTP POST /match/request → sessionId 받음
- * 2. WebSocket 연결 (ws://15.165.159.68:8000/ws/signaling/{sessionId}/?token={token})
+ * 2. WebSocket 연결 (ws://<host>/ws/signaling/<sessionId>/?token=<ACCESS_TOKEN>)
  * 3. "match-found" 메시지 받으면 WebRTC Offer 생성
  * 4. Offer/Answer/ICE Candidate 교환
  * 5. 통화 연결 완료
@@ -72,7 +72,8 @@ export const useWebRTC = (
       return;
     }
 
-    const wsUrl = `${WS_ENDPOINTS.SIGNALING(sessionId)}`;
+    // WebSocket URL에 토큰을 쿼리 파라미터로 추가
+    const wsUrl = `${WS_ENDPOINTS.SIGNALING(sessionId)}?token=${token}`;
     console.log("🔌 WebSocket 연결 시도:", wsUrl);
 
     try {
@@ -378,26 +379,27 @@ export const useWebRTC = (
         }
       }
 
-      // // 4. HTTP POST로 매칭 요청
-      // console.log("📡 매칭 API 호출 중...");
-      // const matchResponse = await MatchService.requestMatch(
-      //   {
-      //     targetGender,
-      //     ...location,
-      //   },
-      //   token,
-      // );
-      // console.log("✅ 매칭 응답:", matchResponse);
-      // console.log("📝 sessionId:", matchResponse.sessionId);
-      // currentSessionId.current = matchResponse.sessionId;
+      // 4. HTTP POST로 매칭 요청
+      console.log("📡 매칭 API 호출 중...");
+      const matchResponse = await MatchService.requestMatch(
+        {
+          targetGender,
+          ...location,
+        },
+        token,
+      );
+      console.log("✅ 매칭 응답:", matchResponse);
+      console.log("📝 sessionId:", matchResponse.sessionId);
+      currentSessionId.current = matchResponse.sessionId;
 
-      // // peerUserId 저장 (친구 추가용)
-      // setCallState((prev) => ({
-      //   ...prev,
-      //   peerUserId: matchResponse.peerUserId,
-      // }));
+      // peerUserId 저장 (친구 추가용)
+      setCallState((prev) => ({
+        ...prev,
+        peerUserId: matchResponse.peerUserId,
+      }));
 
       // 5. WebSocket 연결 (약간의 딜레이 추가)
+      // 토큰은 connectWebSocket 내부에서 쿼리 파라미터로 추가됨
       console.log("🚀 connectWebSocket 호출 직전");
       setTimeout(() => {
         connectWebSocket("test123");

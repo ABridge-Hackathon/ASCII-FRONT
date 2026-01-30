@@ -3,9 +3,9 @@
  * React Native WebView와의 통신 포함
  */
 
-// 메모리 기반 토큰 저장 (임시 - 개발용)
-let accessToken: string | null = "dev_access_token_temp";
-let refreshToken: string | null = "dev_refresh_token_temp";
+// 메모리 기반 토큰 저장 (새로고침 시 초기화됨)
+let accessToken: string | null = null;
+let refreshToken: string | null = null;
 
 /**
  * 두 토큰 모두 설정
@@ -16,7 +16,7 @@ export const setTokens = (access: string, refresh: string): void => {
 
   console.log("✅ 토큰 설정됨:", {
     access: access.substring(0, 20) + "...",
-    refresh: refresh.substring(0, 20) + "...",
+    refresh: refresh ? refresh.substring(0, 20) + "..." : "(없음)",
   });
 
   // React Native에 Refresh Token 저장 요청

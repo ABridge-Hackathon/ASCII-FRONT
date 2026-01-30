@@ -60,21 +60,21 @@ api.interceptors.response.use(
           return Promise.reject(error);
         }
 
-        // console.log("🔄 Access Token 갱신 시도...");
+        console.log("🔄 Access Token 갱신 시도...");
 
-        // // Refresh Token으로 새 Access Token 발급
-        // const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
-        //   refresh: refresh,
-        // });
+        // Refresh Token으로 새 Access Token 발급
+        const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+          refresh: refresh,
+        });
 
-        // const { access, refresh: newRefresh } = response.data;
-        // setTokens(access, newRefresh || refresh);
+        const { access, refresh: newRefresh } = response.data;
+        setTokens(access, newRefresh || refresh);
 
-        // console.log("✅ Access Token 갱신 성공");
+        console.log("✅ Access Token 갱신 성공");
 
         // 실패한 요청 재시도
-        // originalRequest.headers.Authorization = `Bearer ${access}`;
-        // return api(originalRequest);
+        originalRequest.headers.Authorization = `Bearer ${access}`;
+        return api(originalRequest);
       } catch (refreshError) {
         console.error("❌ Refresh Token도 만료됨 - 재로그인 필요");
         clearTokens();
@@ -89,6 +89,19 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+/**
+ * JWT 토큰 발급 응답 타입
+ */
+interface JWTDevResponse {
+  success: boolean;
+  data: {
+    accessToken: string;
+    tokenType: string;
+    isRegistered: boolean;
+  } | null;
+  error: string | null;
+}
 
 /**
  * 인증 관련 API
@@ -112,11 +125,29 @@ export const authAPI = {
   },
 
   /**
-   * 사용자 정보
+   * 개발용 JWT 토큰 발급
+   * POST /auth/jwt/dev
+   * 요청 본문 없음
    */
-  getJWToken: async () => {
-    const response = await api.get("/api/auth/otp/verify");
-    return response.data;
+  getDevJWT: async (): Promise<JWTDevResponse> => {
+    try {
+      const response = await api.post<JWTDevResponse>("/auth/jwt/dev");
+
+      if (!response.data.success || !response.data.data) {
+        throw new Error(response.data.error || "JWT 토큰 발급에 실패했습니다.");
+      }
+
+      // 토큰 저장
+      const { accessToken } = response.data.data;
+      setTokens(accessToken, ""); // refresh token은 없으므로 빈 문자열
+
+      return response.data;
+    } catch (error: any) {
+      console.error("JWT 토큰 발급 오류:", error);
+      throw new Error(
+        error.response?.data?.error || "JWT 토큰 발급에 실패했습니다.",
+      );
+    }
   },
 };
 
@@ -375,7 +406,7 @@ export interface UserProfileResponse {
  */
 export async function getUserProfile(): Promise<UserProfileResponse> {
   try {
-    const response = await api.get<UserProfileResponse>("/users/me/");
+    const response = await api.get<UserProfileResponse>("/api/users/me/");
 
     if (!response.data.success) {
       throw new Error(
