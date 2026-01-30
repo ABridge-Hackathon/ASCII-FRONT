@@ -73,7 +73,7 @@ export const useWebRTC = (
     }
 
     // WebSocket URL에 토큰을 쿼리 파라미터로 추가
-    const wsUrl = `${WS_ENDPOINTS.SIGNALING(sessionId)}?token=${token}`;
+    const wsUrl = `${WS_ENDPOINTS.SIGNALING(sessionId)}`;
     console.log("🔌 WebSocket 연결 시도:", wsUrl);
 
     try {
