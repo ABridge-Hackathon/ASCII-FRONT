@@ -1,6 +1,13 @@
-import { MatchRequest, MatchResponse } from "@/types/webrtc";
+/**
+ * 매칭 관련 HTTP API 서비스
+ * - 매칭 요청 (POST /match/request)
+ * - 매칭 취소 (POST /match/cancel)
+ * - 세션 종료 (POST /match/end)
+ * - 친구 추가 (POST /friends/add)
+ */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { API_BASE_URL } from "@/utils/config";
+import { MatchRequest, MatchResponse } from "@/types/webrtc";
 
 export class MatchService {
   /**
@@ -14,6 +21,8 @@ export class MatchService {
     accessToken: string,
   ): Promise<MatchResponse> {
     try {
+      console.log("🔍 매칭 요청:", request);
+
       const response = await fetch(`${API_BASE_URL}/match/request`, {
         method: "POST",
         headers: {
@@ -32,9 +41,10 @@ export class MatchService {
       }
 
       const data: MatchResponse = await response.json();
+      console.log("✅ 매칭 응답:", data);
       return data;
     } catch (error) {
-      console.error("매칭 요청 오류:", error);
+      console.error("❌ 매칭 요청 오류:", error);
       throw error;
     }
   }
@@ -49,6 +59,8 @@ export class MatchService {
     accessToken: string,
   ): Promise<void> {
     try {
+      console.log("🚫 매칭 취소:", sessionId);
+
       const response = await fetch(`${API_BASE_URL}/match/cancel`, {
         method: "POST",
         headers: {
@@ -62,8 +74,81 @@ export class MatchService {
       if (!response.ok) {
         throw new Error(`매칭 취소 실패: ${response.status}`);
       }
+
+      console.log("✅ 매칭 취소 완료");
     } catch (error) {
-      console.error("매칭 취소 오류:", error);
+      console.error("❌ 매칭 취소 오류:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 통화 종료 (세션 종료)
+   * @param sessionId - 세션 ID
+   * @param accessToken - JWT 액세스 토큰
+   */
+  static async endSession(
+    sessionId: string,
+    accessToken: string,
+  ): Promise<void> {
+    try {
+      console.log("📞 세션 종료:", sessionId);
+
+      const response = await fetch(`${API_BASE_URL}/match/end`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ sessionId }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error(`세션 종료 실패: ${response.status}`);
+      }
+
+      console.log("✅ 세션 종료 완료");
+    } catch (error) {
+      console.error("❌ 세션 종료 오류:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 친구 추가
+   * @param targetUserId - 상대방 유저 ID
+   * @param accessToken - JWT 액세스 토큰
+   */
+  static async addFriend(
+    targetUserId: number,
+    accessToken: string,
+  ): Promise<{ added: boolean }> {
+    try {
+      console.log("👥 친구 추가:", targetUserId);
+
+      const response = await fetch(`${API_BASE_URL}/friends/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ targetUserId }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `친구 추가 실패: ${response.status}`,
+        );
+      }
+
+      const data = await response.json();
+      console.log("✅ 친구 추가 완료:", data);
+      return data;
+    } catch (error) {
+      console.error("❌ 친구 추가 오류:", error);
       throw error;
     }
   }
@@ -78,20 +163,22 @@ export class MatchService {
   } | null> {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        console.warn("Geolocation API를 지원하지 않습니다.");
+        console.warn("⚠️ Geolocation API를 지원하지 않습니다.");
         resolve(null);
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          resolve({
+          const coords = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-          });
+          };
+          console.log("📍 위치 정보:", coords);
+          resolve(coords);
         },
         (error) => {
-          console.warn("위치 정보 가져오기 실패:", error);
+          console.warn("⚠️ 위치 정보 가져오기 실패:", error);
           resolve(null);
         },
         {

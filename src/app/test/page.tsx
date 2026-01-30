@@ -7,7 +7,7 @@ import {
   getRefreshToken,
   setTokens,
   clearTokens,
-} from "@/lib/auth";
+} from "@/utils/auth";
 
 export default function TestPage() {
   const [logs, setLogs] = useState<string[]>([]);

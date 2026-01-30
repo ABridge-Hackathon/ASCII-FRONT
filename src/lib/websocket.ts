@@ -1,4 +1,4 @@
-import { getAccessToken } from "./auth";
+import { getAccessToken } from "@/utils/auth";
 
 export class WebSocketClient {
   private ws: WebSocket | null = null;

@@ -13,7 +13,6 @@ import NextCallChoiceScreen from "@/components/NextCallChoiceScreen";
 
 const WS_BASE_URL =
   process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://localhost:8000";
-
 const USE_MOCK_MODE = process.env.NEXT_PUBLIC_MOCK_MODE === "true";
 
 type AppState =
@@ -26,6 +25,9 @@ type AppState =
 export default function CallPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // 클라이언트 사이드 마운트 체크
+  const [mounted, setMounted] = useState(false);
 
   // URL에서 파라미터 가져오기
   const genderParam = searchParams.get("gender") as Gender | null;
@@ -64,12 +66,22 @@ export default function CallPage() {
   // 초기 매칭 시작 - 한 번만 실행되도록 수정
   const hasStartedMatching = useRef(false);
 
+  // 클라이언트 사이드 마운트
   useEffect(() => {
-    if (wsConnected && appState === "matching" && !hasStartedMatching.current) {
+    setMounted(true);
+  }, []);
+
+  // 초기 매칭 시작 (클라이언트에서만)
+  useEffect(() => {
+    if (!mounted) return;
+
+    // Mock 모드가 아닐 때만 자동으로 매칭 시작
+    if (!USE_MOCK_MODE && !hasStartedMatching.current) {
+      console.log("🚀 페이지 로드 완료, 자동 매칭 시작");
       hasStartedMatching.current = true;
       startMatching(selectedGender, includeLocation);
     }
-  }, [wsConnected]);
+  }, [mounted, selectedGender, includeLocation, startMatching]);
 
   // 통화 시간 계산
   useEffect(() => {
@@ -86,7 +98,6 @@ export default function CallPage() {
           `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
         );
       }, 1000);
-
       return () => clearInterval(interval);
     }
 
@@ -104,32 +115,20 @@ export default function CallPage() {
     }
   }, [webRTCState.isConnected, webRTCState.isMatching]);
 
-  // 로컬 스트림 연결 (스트림이 있거나, 앱 상태가 변경되어 비디오 태그가 새로 나타날 때 실행)
+  // 로컬 스트림 연결
   useEffect(() => {
     if (!localStream) return;
 
-    // 1. 매칭 화면 (큰 비디오)
+    // 매칭 화면 (큰 비디오)
     if (localVideoRef.current) {
       localVideoRef.current.srcObject = localStream;
     }
 
-    // 2. 통화 중 화면 (작은 비디오)
-    // 통화 중 화면의 작은 비디오 (상태가 'connected'로 변한 직후에 할당됨)
+    // 통화 중 화면 (작은 비디오)
     if (localVideoSmallRef.current) {
       localVideoSmallRef.current.srcObject = localStream;
     }
-
-    if (localStream) {
-      // 매칭 화면의 큰 비디오
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = localStream;
-      }
-      // 통화 중 화면의 작은 비디오 (상태가 'connected'로 변한 직후에 할당됨)
-      if (localVideoSmallRef.current) {
-        localVideoSmallRef.current.srcObject = localStream;
-      }
-    }
-  }, [localStream, appState]); // appState를 의존성 배열에 추가하여 UI 전환 시 재실행 보장
+  }, [localStream, appState]);
 
   // 리모트 스트림 연결
   useEffect(() => {
@@ -153,13 +152,43 @@ export default function CallPage() {
 
   const handleCancelMatching = () => {
     cancelMatching();
-    // 매칭 취소 시 홈으로 돌아가기
-    router.push("/home");
+    router.push("/");
   };
 
-  const handleAddFriend = () => {
-    // TODO: 친구 추가 API 호출
-    setAppState("friend-added");
+  const handleAddFriend = async () => {
+    const token = AuthManager.getAccessToken();
+    const peerUserId = webRTCState.peerUserId;
+
+    if (!token || !peerUserId) {
+      alert("친구 추가에 필요한 정보가 없습니다.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://15.165.159.68:8000/friends/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ targetUserId: peerUserId }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error(`친구 추가 실패: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.added) {
+        setAppState("friend-added");
+      } else {
+        alert("친구 추가에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("친구 추가 오류:", error);
+      alert("친구 추가 중 오류가 발생했습니다.");
+    }
   };
 
   const handleSkipFriend = () => {
@@ -168,7 +197,7 @@ export default function CallPage() {
 
   const handleNextCallFromFriendAdded = async () => {
     setCallDuration("00:00");
-    hasStartedMatching.current = false; // 다음 매칭을 위해 리셋
+    hasStartedMatching.current = false;
     setAppState("matching");
     await startMatching(selectedGender, includeLocation);
   };
@@ -178,17 +207,28 @@ export default function CallPage() {
     setTimeout(async () => {
       setIsSliding(false);
       setCallDuration("00:00");
-      hasStartedMatching.current = false; // 다음 매칭을 위해 리셋
-      setAppState("next-choice");
+      hasStartedMatching.current = false;
+      setAppState("matching");
       await startMatching(selectedGender, includeLocation);
     }, 300);
   };
 
   const handleEndFromChoice = () => {
     setCallDuration("00:00");
-    // 통화 완전 종료 시 홈으로 돌아가기
     router.push("/home");
   };
+
+  // 서버 사이드 렌더링 시 로딩 화면
+  if (!mounted) {
+    return (
+      <div className="relative w-full h-screen bg-[#111111] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen bg-[#111111] overflow-hidden">
@@ -254,6 +294,14 @@ export default function CallPage() {
                   }
                 >
                   {webRTCState.isConnected ? "✓" : "✗"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>WS 연결:</span>
+                <span
+                  className={wsConnected ? "text-green-400" : "text-red-400"}
+                >
+                  {wsConnected ? "✓" : "✗"}
                 </span>
               </div>
               {webRTCState.roomId && (
@@ -325,7 +373,6 @@ export default function CallPage() {
 
           {/* 하단 그라데이션 + 취소 버튼 */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-
           <div className="absolute bottom-[109px] left-1/2 transform -translate-x-1/2 z-20">
             <button
               onClick={handleCancelMatching}
@@ -409,7 +456,6 @@ export default function CallPage() {
 
           {/* 하단 그라데이션 + 종료 버튼 */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-
           <div className="absolute bottom-[109px] left-1/2 transform -translate-x-1/2 z-20">
             <button
               onClick={handleEndCall}

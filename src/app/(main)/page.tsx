@@ -15,8 +15,9 @@ export default function HomePage() {
 
   const loadUser = async () => {
     try {
-      const userData = await authAPI.getCurrentUser();
-      setUser(userData);
+      //   const userData = await authAPI.getCurrentUser();
+      //   setUser(userData);
+      setUser({ username: "테스트유저" });
     } catch (error) {
       // 인증되지 않은 경우 로그인 페이지로
       //   router.push("/login");

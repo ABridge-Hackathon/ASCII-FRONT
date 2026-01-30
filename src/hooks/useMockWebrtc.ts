@@ -1,11 +1,15 @@
+/**
+ * Mock WebRTC 훅 (서버 연결 없이 UI 테스트용)
+ * - 실제 카메라/마이크는 사용
+ * - 원격 스트림은 자신의 카메라로 시뮬레이션
+ * - 매칭/연결은 타이머로 시뮬레이션
+ */
+
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { CallState, Gender } from "@/types/webrtc";
 
-/**
- * 서버 연결 없이 UI만 테스트하기 위한 Mock useWebRTC
- */
 export const useMockWebRTC = () => {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -21,9 +25,12 @@ export const useMockWebRTC = () => {
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
 
-  // 로컬 미디어 스트림 시작
+  /**
+   * 로컬 미디어 스트림 시작
+   */
   const startLocalStream = async () => {
     try {
+      console.log("🎥 [MOCK] 카메라/마이크 접근...");
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
@@ -47,7 +54,9 @@ export const useMockWebRTC = () => {
     }
   };
 
-  // 가짜 원격 스트림 생성 (자기 자신의 카메라를 원격으로 시뮬레이션)
+  /**
+   * 가짜 원격 스트림 생성 (자기 자신의 카메라를 원격으로 시뮬레이션)
+   */
   const createFakeRemoteStream = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -63,7 +72,9 @@ export const useMockWebRTC = () => {
     }
   };
 
-  // 매칭 시작 (가짜)
+  /**
+   * 매칭 시작 (가짜)
+   */
   const startMatching = async (
     targetGender: Gender,
     includeLocation: boolean = false,
@@ -107,13 +118,17 @@ export const useMockWebRTC = () => {
     }
   };
 
-  // 매칭 취소
+  /**
+   * 매칭 취소
+   */
   const cancelMatching = async () => {
     console.log("🚫 [MOCK] 매칭 취소");
     setCallState((prev) => ({ ...prev, isMatching: false }));
   };
 
-  // 통화 종료
+  /**
+   * 통화 종료
+   */
   const endCall = () => {
     console.log("📞 [MOCK] 통화 종료");
 
@@ -131,7 +146,9 @@ export const useMockWebRTC = () => {
     });
   };
 
-  // 정리
+  /**
+   * 정리
+   */
   useEffect(() => {
     return () => {
       if (localStreamRef.current) {

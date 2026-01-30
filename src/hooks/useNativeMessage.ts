@@ -1,38 +1,43 @@
+/**
+ * React Native WebView 메시지 리스너 훅
+ * - Native에서 보낸 메시지 수신
+ * - Refresh Token 자동 요청
+ */
+
 "use client";
 
 import { useEffect } from "react";
-import { setRefreshTokenFromNative } from "@/lib/auth";
+import { setRefreshTokenFromNative } from "@/utils/auth";
 
 export const useNativeMessage = () => {
   useEffect(() => {
-    console.log("🔵 [Next.js] Native 메시지 리스너 등록됨");
+    console.log("🔵 Native 메시지 리스너 등록");
 
     const handleMessage = (event: MessageEvent) => {
-      console.log("📨 [Next.js] 메시지 받음:", event.data);
+      console.log("📨 Native 메시지 받음:", event.data);
 
       try {
         const message = JSON.parse(event.data);
-        console.log("✅ [Next.js] 파싱된 메시지:", message);
 
         switch (message.type) {
           case "REFRESH_TOKEN":
             if (message.token) {
               setRefreshTokenFromNative(message.token);
               console.log(
-                "🔑 [Next.js] Refresh Token 받음:",
+                "✅ Refresh Token 받음:",
                 message.token.substring(0, 20) + "...",
               );
             } else {
-              console.log("⚠️ [Next.js] Refresh Token이 비어있음");
+              console.warn("⚠️ Refresh Token이 비어있음");
             }
             break;
 
           default:
-            console.log("❓ [Next.js] 알 수 없는 메시지 타입:", message.type);
+            console.log("❓ 알 수 없는 메시지 타입:", message.type);
             break;
         }
       } catch (error) {
-        console.log("⚠️ [Next.js] JSON 파싱 실패 (일반 메시지):", event.data);
+        console.warn("⚠️ JSON 파싱 실패 (일반 메시지):", event.data);
       }
     };
 
@@ -40,12 +45,10 @@ export const useNativeMessage = () => {
       window.addEventListener("message", handleMessage);
       document.addEventListener("message", handleMessage as any);
 
-      console.log("🔵 [Next.js] 리스너 등록 완료");
-
       // React Native 환경 체크
       if (window.ReactNativeWebView) {
-        console.log("📱 [Next.js] React Native WebView 환경 감지됨");
-        console.log("📤 [Next.js] Native에 Refresh Token 요청 전송");
+        console.log("📱 React Native WebView 환경 감지됨");
+        console.log("📤 Native에 Refresh Token 요청");
 
         window.ReactNativeWebView.postMessage(
           JSON.stringify({
@@ -53,12 +56,12 @@ export const useNativeMessage = () => {
           }),
         );
       } else {
-        console.log("🌐 [Next.js] 일반 브라우저 환경 (WebView 아님)");
+        console.log("🌐 일반 브라우저 환경");
       }
     }
 
     return () => {
-      console.log("🔴 [Next.js] 리스너 제거됨");
+      console.log("🔴 Native 리스너 제거");
       if (typeof window !== "undefined") {
         window.removeEventListener("message", handleMessage);
         document.removeEventListener("message", handleMessage as any);
